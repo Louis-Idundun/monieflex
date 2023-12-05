@@ -41,6 +41,9 @@ public class User extends BaseEntity {
     @Email(message = "Email must be properly formatted")
     private String emailAddress;
 
+    @Column(name = "profile_picture")
+    private String profilePicture;
+
     @Column(name = "phone_number")
     @NotEmpty(message = "Phone number should not be empty")
     @Min(value = 11, message = "Phone number should not be less than 11 digits")
