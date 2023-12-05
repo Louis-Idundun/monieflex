@@ -25,7 +25,7 @@ public class VtPassService {
     }
 
 
-    public String airtime(UserDto userDto){
+    public Object airtime(UserDto userDto){
         HttpHeaders headers = getVtPassHeader();
         HttpEntity<UserDto> entity = new HttpEntity<>(userDto, headers);
         restTemplate.postForEntity("1223", entity, String.class);

@@ -16,7 +16,7 @@ public class AirtimeService {
     }
 
     public ApiResponse<?> purchaseAirtime(UserDto userDto){
-        String response = vtPassService.airtime(userDto);
+        Object response = vtPassService.airtime(userDto);
         return new ApiResponse<>(response,"success", HttpStatus.OK);
     }
 }
