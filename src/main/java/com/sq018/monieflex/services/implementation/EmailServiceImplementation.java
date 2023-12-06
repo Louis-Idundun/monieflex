@@ -4,6 +4,7 @@ import com.sq018.monieflex.services.EmailService;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -15,9 +16,12 @@ import java.util.Date;
 public class EmailServiceImplementation implements EmailService {
     private JavaMailSender mailSender;
 
+    @Value("${spring.mail.username}")
+    private String sender;
+
     @SneakyThrows
     @Override
-    public void sendEmail(String message, String subject, String sender, String recipient) {
+    public void sendEmail(String message, String subject, String recipient) {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true);
         messageHelper.setSubject(subject);
