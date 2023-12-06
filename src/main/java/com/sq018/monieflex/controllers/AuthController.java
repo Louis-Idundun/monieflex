@@ -3,6 +3,7 @@ package com.sq018.monieflex.controllers;
 
 import com.sq018.monieflex.dtos.LoginDto;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.services.AuthService;
 import com.sq018.monieflex.services.implementations.AuthImplementation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,15 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    private final AuthImplementation authImplementation;
+    private final AuthService authService;
 
     @Autowired
-    public AuthController(AuthImplementation authImplementation) {
-        this.authImplementation = authImplementation;
+    public AuthController(AuthImplementation authService) {
+        this.authService = authService;
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<String>> login(@RequestBody LoginDto login) {
-        return authImplementation.login(login);
+        return authService.login(login);
     }
 }

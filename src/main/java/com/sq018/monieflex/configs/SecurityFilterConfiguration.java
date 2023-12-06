@@ -33,7 +33,7 @@ public class SecurityFilterConfiguration {
                                 "/v3/api-docs",
                                 "/v3/api-docs/**"
                         ).permitAll()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilterConfiguration, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider);
