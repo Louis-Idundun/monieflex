@@ -13,16 +13,6 @@ import io.swagger.v3.oas.annotations.servers.Server;
                 version = "api/v1",
                 title = "MonieFlex Swagger Configuration"
         ),
-        servers = {
-                @Server(
-                        url = "http://localhost:8080",
-                        description = "Development Server"
-                ),
-                @Server(
-                        url = "http://localhost:3000",
-                        description = "Production Server"
-                )
-        },
         security = {
                 @SecurityRequirement(
                         name = "Bearer"
