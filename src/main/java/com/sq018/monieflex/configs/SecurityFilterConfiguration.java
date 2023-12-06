@@ -22,6 +22,7 @@ public class SecurityFilterConfiguration {
                         .requestMatchers(
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/signup",
+                                "/auth/sendmail",
                                 "/swagger-ui.html",
                                 "/webjars/**",
                                 "/swagger-ui/**",
