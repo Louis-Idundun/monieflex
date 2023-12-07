@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private final UserService userService;
 
-    @GetMapping("/view_profile/{id}")
+    @GetMapping("/profile")
     public ResponseEntity<ApiResponse<ProfileResponse>> viewProfile() {
         ApiResponse<ProfileResponse> apiResponse = userService.viewProfile();
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
