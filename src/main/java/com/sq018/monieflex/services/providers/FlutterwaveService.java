@@ -2,8 +2,11 @@ package com.sq018.monieflex.services.providers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sq018.monieflex.dtos.FLWVirtualDto;
+import com.sq018.monieflex.entities.account.Wallet;
+import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.flutterwave.FLWVirtualAccountResponse;
+import com.sq018.monieflex.payloads.flutterwave.VirtualAccountResponse;
 import com.sq018.monieflex.payloads.flwallbankresponse.AllBanksData;
 import com.sq018.monieflex.payloads.flwallbankresponse.FLWAllBanksResponse;
 import com.sq018.monieflex.utils.FlutterwaveEndpoints;
@@ -15,6 +18,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
@@ -45,7 +49,7 @@ public class FlutterwaveService {
         return headers;
     }
 
-    public ResponseEntity<FLWVirtualAccountResponse> createWallet(
+    public Wallet createWallet(
             String emailAddress, String BVN, String txRef,
             String lastName, String firstName, String phoneNumber
     ) {
@@ -54,8 +58,26 @@ public class FlutterwaveService {
                 phoneNumber, 1, true, txRef
         );
         HttpEntity<FLWVirtualDto> data = new HttpEntity<>(body, getFlutterwaveHeader());
-        return rest.postForEntity(FlutterwaveEndpoints.VIRTUAL_ACCOUNT_NUMBER, data, FLWVirtualAccountResponse.class);
+        var response = rest.postForEntity(FlutterwaveEndpoints.VIRTUAL_ACCOUNT_NUMBER, data, FLWVirtualAccountResponse.class);
+
+        if(response.getStatusCode().is2xxSuccessful()) {
+            if(Objects.requireNonNull(response.getBody()).getStatus().equalsIgnoreCase("success")) {
+                VirtualAccountResponse accountResponse = response.getBody().getData();
+                if(ObjectUtils.isNotEmpty(accountResponse)) {
+                    Wallet wallet = new Wallet();
+                    wallet.setBalance(BigDecimal.valueOf(0.00));
+                    wallet.setReference(accountResponse.getFlwRef());
+                    wallet.setBankName(accountResponse.getBankName());
+                    wallet.setNumber(accountResponse.getAccountNumber());
+                    return wallet;
+                }
+            }
+            throw new MonieFlexException("Couldn't finish processing data");
+        } else {
+            throw new MonieFlexException("Error in creating wallet");
+        }
     }
+
 
     @SneakyThrows
     public ApiResponse<List<AllBanksData>> getAllBanks() {

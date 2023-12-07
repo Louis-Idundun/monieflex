@@ -30,27 +30,12 @@ public class WalletService {
 
     public Wallet create(User user) {
         String reference = generateTxRef();
-        ResponseEntity<FLWVirtualAccountResponse> response = flutterwaveService.createWallet(
+        Wallet wallet = flutterwaveService.createWallet(
                 user.getEmailAddress(), user.getBvn(), reference,
                 user.getLastName(), user.getFirstName(), user.getPhoneNumber()
         );
-        if(response.getStatusCode().is2xxSuccessful()) {
-            if(Objects.requireNonNull(response.getBody()).getStatus().equalsIgnoreCase("success")) {
-                VirtualAccountResponse accountResponse = response.getBody().getData();
-                if(ObjectUtils.isNotEmpty(accountResponse)) {
-                    Wallet wallet = new Wallet();
-                    wallet.setBalance(BigDecimal.valueOf(0.00));
-                    wallet.setReference(accountResponse.getFlwRef());
-                    wallet.setBankName(accountResponse.getBankName());
-                    wallet.setUser(user);
-                    wallet.setNumber(accountResponse.getAccountNumber());
-                    return wallet;
-                }
-            }
-            throw new MonieFlexException("Couldn't finish processing data");
-        } else {
-            throw new MonieFlexException("Error in creating wallet");
-        }
+        wallet.setUser(user);
+        return wallet;
     }
 
     public ApiResponse<List<AllBanksData>> getAllBanks(){
