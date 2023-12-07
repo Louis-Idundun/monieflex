@@ -1,4 +1,4 @@
-package com.sq018.monieflex.payloads;
+package com.sq018.monieflex.payloads.flwallbankresponse;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -16,18 +16,5 @@ public class FLWAllBanksResponse {
     @JsonProperty("message")
     private String message;
     @JsonProperty("data")
-    private List<Data> data;
-
-    @Getter
-    @Setter
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class Data {
-        @JsonProperty("id")
-        private Integer id;
-        @JsonProperty("code")
-        private String code;
-        @JsonProperty("name")
-        private String name;
-    }
+    private List<AllBanksData> data;
 }
