@@ -18,11 +18,11 @@ public class SecurityFilterConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(
-                                "/api/v1/auth/login",
-                                "/api/v1/auth/signup",
-                                "/auth/sendmail",
+                                "/auth/login",
+                                "/auth/signup",
                                 "/swagger-ui.html",
                                 "/webjars/**",
                                 "/swagger-ui/**",
