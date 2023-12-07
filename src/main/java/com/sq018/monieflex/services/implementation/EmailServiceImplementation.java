@@ -27,7 +27,7 @@ public class EmailServiceImplementation implements EmailService {
 
     @SneakyThrows
     @Override
-    public ApiResponse<String> sendEmail(String message, String subject, String recipient) {
+    public void sendEmail(String message, String subject, String recipient) {
         log.info("mail setup");
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -40,6 +40,5 @@ public class EmailServiceImplementation implements EmailService {
         mailSender.send(mimeMessage);
 
         log.info("mail sent");
-        return new ApiResponse<>("Check mail", HttpStatus.OK);
     }
 }
