@@ -33,4 +33,17 @@ public class ApiResponse<T> {
         this.statusCode = status.value();
         this.message = message;
     }
+
+    public ApiResponse(String message, HttpStatus status,Integer statusCode, T data) {
+        this.message = message;
+        this.status = status;
+        this.statusCode = statusCode;
+        this.data = data;
+    }
+
+    public ApiResponse(String message, HttpStatus status, Integer statusCode) {
+        this.message = message;
+        this.status = status;
+        this.statusCode = statusCode;
+    }
 }
