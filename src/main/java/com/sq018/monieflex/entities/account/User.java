@@ -13,7 +13,6 @@ import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
@@ -23,17 +22,14 @@ import java.util.List;
 public class User extends BaseEntity implements UserDetails {
     @Column(name = "first_name")
     @NotEmpty(message = "First name should not be empty")
-    @Min(value = 2, message = "First name should not be less than 2 characters")
     private String firstName;
 
     @Column(name = "last_name")
     @NotEmpty(message = "Last name should not be empty")
-    @Min(value = 2, message = "Last name should not be less than 2 characters")
     private String lastName;
 
     @Column(name = "encrypted_password")
     @NotEmpty(message = "Password should not be empty")
-    @Min(value = 2, message = "Password should not be less than 2 characters")
     private String encryptedPassword;
 
     @Column(name = "transaction_pin")
@@ -49,13 +45,11 @@ public class User extends BaseEntity implements UserDetails {
 
     @Column(name = "phone_number")
     @NotEmpty(message = "Phone number should not be empty")
-    @Min(value = 11, message = "Phone number should not be less than 11 digits")
     private String phoneNumber;
 
     @Column(name = "bvn")
     @NotEmpty(message = "BVN should not be empty")
-    @Min(value = 2, message = "BVN should not be less than 2 characters")
-    private BigDecimal bvn;
+    private String bvn;
 
     @Column(name = "account_status")
     @Enumerated(value = EnumType.STRING)
