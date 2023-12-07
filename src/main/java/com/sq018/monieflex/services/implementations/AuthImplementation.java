@@ -1,11 +1,16 @@
 package com.sq018.monieflex.services.implementations;
 
 import com.sq018.monieflex.dtos.LoginDto;
+import com.sq018.monieflex.dtos.SignupDto;
+import com.sq018.monieflex.entities.account.User;
+import com.sq018.monieflex.enums.AccountStatus;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.repositories.ConfirmationTokenRepository;
 import com.sq018.monieflex.repositories.UserRepository;
+import com.sq018.monieflex.repositories.WalletRepository;
 import com.sq018.monieflex.services.AuthService;
+import com.sq018.monieflex.services.WalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,6 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -25,6 +31,9 @@ public class AuthImplementation implements AuthService {
     private final ConfirmationTokenRepository confirmationTokenRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtImplementation jwtImplementation;
+    private final WalletService walletService;
+    private final WalletRepository walletRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public ResponseEntity<ApiResponse<String>> login(LoginDto loginDto){
@@ -49,6 +58,34 @@ public class AuthImplementation implements AuthService {
             }
         } else {
             throw new UsernameNotFoundException("User not found");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<String>> signup(SignupDto signupDto) {
+        var user = userRepository.findByEmailAddress(signupDto.emailAddress());
+        if(user.isPresent()) {
+            throw new MonieFlexException("Email address already exists");
+        } else {
+            User newUser = new User();
+            newUser.setEmailAddress(signupDto.emailAddress());
+            newUser.setEncryptedPassword(passwordEncoder.encode(signupDto.password()));
+            newUser.setFirstName(signupDto.firstName());
+            newUser.setLastName(signupDto.lastName());
+            newUser.setBvn(signupDto.bvn());
+            newUser.setPhoneNumber(signupDto.phoneNumber());
+            newUser.setStatus(AccountStatus.SUSPENDED);
+
+            var wallet = walletService.create(newUser);
+
+            userRepository.save(newUser);
+            walletRepository.save(wallet);
+
+            ApiResponse<String> response = new ApiResponse<>(
+                    "Check your email for OTP verification",
+                    "Successfully created account"
+            );
+            return new ResponseEntity<>(response, response.getStatus());
         }
     }
 }

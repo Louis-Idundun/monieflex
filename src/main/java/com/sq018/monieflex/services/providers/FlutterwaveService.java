@@ -1,7 +1,9 @@
 package com.sq018.monieflex.services.providers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sq018.monieflex.dtos.FLWVirtualDto;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.flutterwave.FLWVirtualAccountResponse;
 import com.sq018.monieflex.payloads.flwallbankresponse.AllBanksData;
 import com.sq018.monieflex.payloads.flwallbankresponse.FLWAllBanksResponse;
 import com.sq018.monieflex.utils.FlutterwaveEndpoints;
@@ -38,9 +40,21 @@ public class FlutterwaveService {
 
     public HttpHeaders getFlutterwaveHeader(){
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer FLWSECK_TEST-624f1a1740dbf3296b5f59feefc0c476-X");
+        headers.set("Authorization", "Bearer " + FLW_SECRET_KEY);
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
+    }
+
+    public ResponseEntity<FLWVirtualAccountResponse> createWallet(
+            String emailAddress, String BVN, String txRef,
+            String lastName, String firstName, String phoneNumber
+    ) {
+        FLWVirtualDto body = new FLWVirtualDto(
+                emailAddress, BVN, firstName, lastName,
+                phoneNumber, 1, true, txRef
+        );
+        HttpEntity<FLWVirtualDto> data = new HttpEntity<>(body, getFlutterwaveHeader());
+        return rest.postForEntity(FlutterwaveEndpoints.VIRTUAL_ACCOUNT_NUMBER, data, FLWVirtualAccountResponse.class);
     }
 
     @SneakyThrows

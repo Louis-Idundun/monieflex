@@ -2,6 +2,7 @@ package com.sq018.monieflex.controllers;
 
 
 import com.sq018.monieflex.dtos.LoginDto;
+import com.sq018.monieflex.dtos.SignupDto;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.services.AuthService;
 import com.sq018.monieflex.services.implementations.AuthImplementation;
@@ -25,5 +26,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<String>> login(@RequestBody LoginDto login) {
         return authService.login(login);
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<ApiResponse<String>> signup(@RequestBody SignupDto signup) {
+        return authService.signup(signup);
     }
 }
