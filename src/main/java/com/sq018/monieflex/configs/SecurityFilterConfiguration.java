@@ -21,8 +21,8 @@ public class SecurityFilterConfiguration {
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(
-                                "/api/v1/auth/login",
-                                "/api/v1/auth/signup",
+                                "/auth/login",
+                                "/auth/signup",
                                 "/swagger-ui.html",
                                 "/webjars/**",
                                 "/swagger-ui/**",
