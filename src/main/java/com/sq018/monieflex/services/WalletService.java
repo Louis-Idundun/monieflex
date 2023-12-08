@@ -1,5 +1,6 @@
 package com.sq018.monieflex.services;
 
+import com.sq018.monieflex.dtos.FLWVerifyAccountDto;
 import com.sq018.monieflex.entities.account.User;
 import com.sq018.monieflex.entities.account.Wallet;
 import com.sq018.monieflex.exceptions.MonieFlexException;
@@ -40,5 +41,9 @@ public class WalletService {
 
     public ApiResponse<List<AllBanksData>> getAllBanks(){
         return flutterwaveService.getAllBanks();
+    }
+
+    public ApiResponse<VirtualAccountResponse> verifyBankAccount(FLWVerifyAccountDto accountDto) {
+        return flutterwaveService.verifyBankAccount(accountDto);
     }
 }
