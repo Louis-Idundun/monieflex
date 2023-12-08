@@ -1,7 +1,12 @@
 package com.sq018.monieflex.services;
 
-import org.springframework.stereotype.Service;
+import com.sq018.monieflex.dtos.LoginDto;
+import com.sq018.monieflex.dtos.SignupDto;
+import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.LoginResponse;
+import org.springframework.http.ResponseEntity;
 
-@Service
-public class AuthService {
+public interface AuthService {
+    ResponseEntity<ApiResponse<LoginResponse>> login(LoginDto loginDto);
+    ResponseEntity<ApiResponse<String>> signup(SignupDto signupDto);
 }

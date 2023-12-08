@@ -1,0 +1,43 @@
+package com.sq018.monieflex.configs;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+@Configuration
+@RequiredArgsConstructor
+public class SecurityFilterConfiguration {
+    private final JwtFilterConfiguration jwtFilterConfiguration;
+    private final AuthenticationProvider authenticationProvider;
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+        httpSecurity.csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers(
+                                "/auth/login",
+                                "/auth/signup",
+                                "/swagger-ui.html",
+                                "/webjars/**",
+                                "/swagger-ui/**",
+                                "configuration/security",
+                                "configuration/ui",
+                                "/swagger-resources/**",
+                                "/swagger-resources",
+                                "/v2/api-docs",
+                                "/v3/api-docs",
+                                "/v3/api-docs/**"
+                        ).permitAll()
+                        .anyRequest().permitAll()
+                )
+                .addFilterBefore(jwtFilterConfiguration, UsernamePasswordAuthenticationFilter.class)
+                .authenticationProvider(authenticationProvider);
+        return httpSecurity.build();
+    }
+}

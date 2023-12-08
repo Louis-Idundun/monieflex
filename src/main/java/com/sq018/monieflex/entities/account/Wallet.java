@@ -1,7 +1,6 @@
 package com.sq018.monieflex.entities.account;
 
 import com.sq018.monieflex.entities.BaseEntity;
-import com.sq018.monieflex.entities.account.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
@@ -15,15 +14,14 @@ import java.math.BigDecimal;
 public class Wallet extends BaseEntity {
     @Column(name = "number")
     @NotEmpty(message = "Wallet should not be empty")
-    private BigDecimal number;
+    private String number;
 
     @Column(name = "balance")
-    @NotEmpty(message = "Balance should not be empty")
     private BigDecimal balance;
 
-    @Column(name = "name")
-    @NotEmpty(message = "Name should not be empty")
-    private String name;
+    @Column(name = "reference")
+    @NotEmpty(message = "Reference should not be empty")
+    private String reference;
 
     @Column(name = "bank_name")
     @NotEmpty(message = "Bank name should not be empty")
