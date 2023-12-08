@@ -34,7 +34,7 @@ public class SecurityFilterConfiguration {
                                 "/v3/api-docs",
                                 "/v3/api-docs/**"
                         ).permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtFilterConfiguration, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider);

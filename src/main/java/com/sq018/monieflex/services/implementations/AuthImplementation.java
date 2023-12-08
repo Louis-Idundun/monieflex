@@ -6,6 +6,7 @@ import com.sq018.monieflex.entities.account.User;
 import com.sq018.monieflex.enums.AccountStatus;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.LoginResponse;
 import com.sq018.monieflex.repositories.ConfirmationTokenRepository;
 import com.sq018.monieflex.repositories.UserRepository;
 import com.sq018.monieflex.repositories.WalletRepository;
@@ -36,26 +37,26 @@ public class AuthImplementation implements AuthService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public ResponseEntity<ApiResponse<String>> login(LoginDto loginDto){
+    public ResponseEntity<ApiResponse<LoginResponse>> login(LoginDto loginDto){
         var user = userRepository.findByEmailAddress(loginDto.emailAddress());
         if(user.isPresent()) {
-            var confirmUser = confirmationTokenRepository.findByUser_EmailAddress(user.get().getEmailAddress());
-            if(confirmUser.isPresent() && confirmUser.get().getConfirmedAt() == null) {
-                /// TODO:: Generate and send OTP verify token
-                throw new MonieFlexException("Account has not been activated");
-            } else {
-                Authentication authentication = authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(loginDto.emailAddress(), loginDto.password())
-                );
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                Map<String, Object> claims = new HashMap<>();
-                claims.put("first_name", user.get().getFirstName());
-                claims.put("last_name", user.get().getLastName());
-                String token = jwtImplementation.generateJwtToken(claims, loginDto.emailAddress());
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginDto.emailAddress(), loginDto.password())
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("first_name", user.get().getFirstName());
+            claims.put("last_name", user.get().getLastName());
+            String token = jwtImplementation.generateJwtToken(claims, loginDto.emailAddress());
 
-                ApiResponse<String> response = new ApiResponse<>(token, "Login successful");
-                return new ResponseEntity<>(response, response.getStatus());
-            }
+            LoginResponse loginResponse = new LoginResponse(
+                    user.get().getFirstName(),
+                    user.get().getLastName(),
+                    user.get().getEmailAddress(),
+                    token
+            );
+            ApiResponse<LoginResponse> response = new ApiResponse<>(loginResponse, "Login successful");
+            return new ResponseEntity<>(response, response.getStatus());
         } else {
             throw new UsernameNotFoundException("User not found");
         }
