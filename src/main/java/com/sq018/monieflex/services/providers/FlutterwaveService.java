@@ -1,11 +1,14 @@
 package com.sq018.monieflex.services.providers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sq018.monieflex.dtos.FLWVerifyAccountDto;
 import com.sq018.monieflex.dtos.FLWVirtualDto;
 import com.sq018.monieflex.entities.account.Wallet;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.flutterwave.FLWVerifyAccountResponse;
 import com.sq018.monieflex.payloads.flutterwave.FLWVirtualAccountResponse;
+import com.sq018.monieflex.payloads.flutterwave.VerifyAccountResponse;
 import com.sq018.monieflex.payloads.flutterwave.VirtualAccountResponse;
 import com.sq018.monieflex.payloads.flwallbankresponse.AllBanksData;
 import com.sq018.monieflex.payloads.flwallbankresponse.FLWAllBanksResponse;
@@ -99,5 +102,30 @@ public class FlutterwaveService {
             return new ApiResponse<>("Unable to process this request at this moment", HttpStatus.BAD_REQUEST, 99);
         }
         return new ApiResponse<>("Unable to process this request at this moment", HttpStatus.BAD_REQUEST, 99);
+    }
+
+
+    @SneakyThrows
+    public ApiResponse<VirtualAccountResponse> verifyBankAccount(FLWVerifyAccountDto verifyAccountDto) {
+        HttpEntity<FLWVerifyAccountDto> entity = new HttpEntity<>(verifyAccountDto, getFlutterwaveHeader());
+        var request = rest.postForEntity(
+                FlutterwaveEndpoints.VERIFY_BANK_ACCOUNT,
+                entity, FLWVerifyAccountResponse.class
+        );
+        if(request.getStatusCode().is2xxSuccessful()) {
+            FLWVerifyAccountResponse body = request.getBody();
+            if(Objects.requireNonNull(body).getStatus().equalsIgnoreCase("success")) {
+                VerifyAccountResponse data = body.getData();
+                if(ObjectUtils.isNotEmpty(data)) {
+                    return new ApiResponse(
+                            data,
+                            "Request successfully processed"
+                    );
+                }
+            }
+            throw new MonieFlexException("Error in processing request");
+        } else {
+            throw new MonieFlexException("Invalid Account. Please check your details");
+        }
     }
 }
