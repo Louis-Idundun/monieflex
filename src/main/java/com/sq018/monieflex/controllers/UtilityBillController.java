@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UtilityBillController {
     private final VtPassService vtPassService;
 
-    @GetMapping("/get-tv-variations")
+    @GetMapping("/tv-variations")
     public ResponseEntity<VtpassTVariationResponse> fetchTvVariation(@RequestParam String code) {
         var response = vtPassService.getTvVariations(code);
         return new ResponseEntity<>(response, HttpStatus.OK);
