@@ -4,6 +4,7 @@ package com.sq018.monieflex.controllers;
 import com.sq018.monieflex.dtos.LoginDto;
 import com.sq018.monieflex.dtos.SignupDto;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.LoginResponse;
 import com.sq018.monieflex.services.AuthService;
 import com.sq018.monieflex.services.implementations.AuthImplementation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<String>> login(@RequestBody LoginDto login) {
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginDto login) {
         return authService.login(login);
     }
 

@@ -5,6 +5,7 @@ import com.sq018.monieflex.payloads.ApiResponse;
 import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -23,6 +24,14 @@ public class MonieFlexExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ApiResponse<String> handleUsernameNotFoundException(UsernameNotFoundException exception){
+        return new ApiResponse<>(
+                exception.getMessage(),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(LockedException.class)
+    public ApiResponse<String> handleLockedException(LockedException exception){
         return new ApiResponse<>(
                 exception.getMessage(),
                 HttpStatus.BAD_REQUEST
