@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  database:
+    image: postgres:latest
+    container_name: database
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Password
+      - POSTGRES_DB=monieflex
+    ports:
+      - '5433:5432'
+
+  backend:
+    container_name: monieflex
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '8085:8080'
+    expose:
+          - 8000
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/monieflex
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=Password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create
+    depends_on:
+      - database
