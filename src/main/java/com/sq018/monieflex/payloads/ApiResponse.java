@@ -1,12 +1,13 @@
 package com.sq018.monieflex.payloads;
 
-import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class ApiResponse<T> {
     private String message;
     private HttpStatus status;

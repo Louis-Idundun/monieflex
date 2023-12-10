@@ -1,7 +1,5 @@
-package com.sq018.monieflex.payloads.flwallbankresponse;
+package com.sq018.monieflex.payloads.flutterwave;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;

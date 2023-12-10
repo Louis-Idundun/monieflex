@@ -18,6 +18,7 @@ public class UserService {
 
     public ApiResponse<ProfileResponse> viewProfile() {
         String email = UserUtil.getLoginUser();
+        System.out.println("Hi from here: " + email);
         var user = userRepository.findByEmailAddress(email).orElse(null);
         if (!Objects.isNull(user)) {
             ProfileResponse profileResponse = new ProfileResponse();
