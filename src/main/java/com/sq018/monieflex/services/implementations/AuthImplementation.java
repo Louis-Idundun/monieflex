@@ -4,14 +4,15 @@ import com.sq018.monieflex.dtos.LoginDto;
 import com.sq018.monieflex.dtos.SignupDto;
 import com.sq018.monieflex.entities.account.User;
 import com.sq018.monieflex.enums.AccountStatus;
+import com.sq018.monieflex.enums.VerifyType;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.LoginResponse;
-import com.sq018.monieflex.repositories.ConfirmationTokenRepository;
 import com.sq018.monieflex.repositories.UserRepository;
 import com.sq018.monieflex.repositories.WalletRepository;
 import com.sq018.monieflex.services.AuthService;
 import com.sq018.monieflex.services.WalletService;
+import com.sq018.monieflex.utils.SignupEmailTemplate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,12 +30,21 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthImplementation implements AuthService {
     private final UserRepository userRepository;
-    private final ConfirmationTokenRepository confirmationTokenRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtImplementation jwtImplementation;
     private final WalletService walletService;
     private final WalletRepository walletRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailImplementation emailImplementation;
+
+    private final Long expire = 900000L;
+
+    protected String generateToken(User user, Long expiryDate) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("first_name", user.getFirstName());
+        claims.put("last_name", user.getLastName());
+        return jwtImplementation.generateJwtToken(claims, user.getEmailAddress(), expiryDate);
+    }
 
     @Override
     public ResponseEntity<ApiResponse<LoginResponse>> login(LoginDto loginDto){
@@ -44,16 +54,12 @@ public class AuthImplementation implements AuthService {
                     new UsernamePasswordAuthenticationToken(loginDto.emailAddress(), loginDto.password())
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            Map<String, Object> claims = new HashMap<>();
-            claims.put("first_name", user.get().getFirstName());
-            claims.put("last_name", user.get().getLastName());
-            String token = jwtImplementation.generateJwtToken(claims, loginDto.emailAddress());
 
             LoginResponse loginResponse = new LoginResponse(
                     user.get().getFirstName(),
                     user.get().getLastName(),
                     user.get().getEmailAddress(),
-                    token
+                    generateToken(user.get(), null)
             );
             ApiResponse<LoginResponse> response = new ApiResponse<>(loginResponse, "Login successful");
             return new ResponseEntity<>(response, response.getStatus());
@@ -82,11 +88,76 @@ public class AuthImplementation implements AuthService {
             userRepository.save(newUser);
             walletRepository.save(wallet);
 
+            emailImplementation.sendEmail(
+                    SignupEmailTemplate.signup(
+                            newUser.getFirstName(),
+                            generateToken(newUser, expire)
+                    ),
+                    "Verify your email address",
+                    newUser.getEmailAddress()
+            );
+
             ApiResponse<String> response = new ApiResponse<>(
                     "Check your email for OTP verification",
                     "Successfully created account"
             );
             return new ResponseEntity<>(response, response.getStatus());
+        }
+    }
+
+    @Override
+    public String confirmEmail(String token) {
+        String email = jwtImplementation.extractEmailAddressFromToken(token);
+        if(email != null) {
+            if(jwtImplementation.isExpired(token)) {
+                return "Link has expired. Please request for a new link.";
+            } else {
+                var user = userRepository.findByEmailAddress(email);
+                if(user.isPresent()) {
+                    if(!user.get().isEnabled()) {
+                        var update = user.get();
+                        update.setStatus(AccountStatus.ACTIVE);
+                        userRepository.save(update);
+                        return "Your email address is now verified. Please login.";
+                    } else {
+                        return "Email address is already verified.";
+                    }
+                } else {
+                    return "User not found. Please check the link.";
+                }
+            }
+        } else {
+            return "Link is not properly formatted.";
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<String>> resendLink(String email, VerifyType type) {
+        var user = userRepository.findByEmailAddress(email);
+        if(user.isPresent()) {
+            if(type == VerifyType.SIGNUP && user.get().isEnabled()) {
+                throw new MonieFlexException("This email is already verified");
+            } else {
+                if(type == VerifyType.SIGNUP && !user.get().isEnabled()) {
+                    emailImplementation.sendEmail(
+                            SignupEmailTemplate.signup(
+                                    user.get().getFirstName(),
+                                    generateToken(user.get(), expire)
+                            ),
+                            "Verify your email address",
+                            user.get().getEmailAddress()
+                    );
+                } else {
+                    /// TODO:: Send Reset Password email
+                }
+                ApiResponse<String> response = new ApiResponse<>(
+                        "Check your email for verification",
+                        "Success in sending link"
+                );
+                return new ResponseEntity<>(response, response.getStatus());
+            }
+        } else {
+            throw new MonieFlexException("User does not exist");
         }
     }
 }
