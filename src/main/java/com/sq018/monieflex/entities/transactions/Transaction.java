@@ -17,7 +17,6 @@ import java.math.BigDecimal;
 @Entity
 public class Transaction extends BaseEntity {
     @Column(name = "amount")
-    @NotEmpty(message = "Amount should not be empty")
     private BigDecimal amount;
 
     @Column(name = "status")
@@ -38,7 +37,6 @@ public class Transaction extends BaseEntity {
     private TransactionType transactionType;
 
     @Column(name = "provider_reference")
-    @NotEmpty(message = "Provider reference should not be empty")
     private String providerReference;
 
     @Column(name = "reference")
