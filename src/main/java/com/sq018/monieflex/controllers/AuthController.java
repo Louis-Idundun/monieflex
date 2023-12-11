@@ -42,23 +42,4 @@ public class AuthController {
     public ResponseEntity<ApiResponse<String>> resendLink(@RequestParam String email, @RequestParam VerifyType type) {
         return authService.resendLink(email, type);
     }
-
-    @GetMapping("/check-email-for-password-reset")
-    public ResponseEntity<ApiResponse<String>> checkEmailForPasswordReset(@RequestParam String emailAddress) {
-        return authService.checkEmailForPasswordReset(emailAddress);
-    }
-
-    @GetMapping("/verify-email-address")
-    public String verifyResetPasswordLink(@RequestParam String token, HttpServletResponse response) {
-        return authService.verifyResetPasswordLink(token, response);
-    }
-
-    public record ResetPassword(String newPassword, String confirmPassword) {}
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<ApiResponse<String>> resetPassword(
-            @RequestParam String token, @RequestBody ResetPassword body
-    ) {
-        return authService.resetPassword(token, body.newPassword(), body.confirmPassword());
-    }
 }
