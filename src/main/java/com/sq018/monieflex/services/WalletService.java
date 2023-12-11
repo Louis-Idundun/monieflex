@@ -73,14 +73,14 @@ public class WalletService {
                 userUtil.updateWalletBalance(BigDecimal.valueOf(transfer.amount()), false);
                 response.setStatus(HttpStatus.OK);
                 response.setMessage("Transaction Successful");
-                response.setData("You are a thief");
+                response.setData("Transfer to %s successful".formatted(transaction.getAccount()));
             } else {
                 transaction.setStatus(TransactionStatus.FAILED);
                 transactionRepository.save(transaction);
                 userUtil.updateWalletBalance(BigDecimal.valueOf(transfer.amount()), false);
                 response.setStatus(HttpStatus.OK);
                 response.setMessage("Transaction Failed");
-                response.setData("You are a thief");
+                response.setData("Couldn't process transaction");
             }
             return response;
         } else {

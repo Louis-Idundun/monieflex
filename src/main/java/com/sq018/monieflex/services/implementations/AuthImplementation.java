@@ -12,11 +12,8 @@ import com.sq018.monieflex.repositories.UserRepository;
 import com.sq018.monieflex.repositories.WalletRepository;
 import com.sq018.monieflex.services.AuthService;
 import com.sq018.monieflex.services.WalletService;
-import com.sq018.monieflex.utils.ForgotPasswordEmailTemplate;
 import com.sq018.monieflex.utils.SignupEmailTemplate;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -135,83 +132,6 @@ public class AuthImplementation implements AuthService {
     }
 
     @Override
-    public ResponseEntity<ApiResponse<String>> checkEmailForPasswordReset(String emailAddress) {
-        var user = userRepository.findByEmailAddress(emailAddress);
-        if (user.isPresent()) {
-            emailImplementation.sendEmail(
-                    ForgotPasswordEmailTemplate.password(
-                            user.get().getFirstName(),
-                            generateToken(user.get(),expire)
-                    ),
-                    "Password Reset - Verify your email address",
-                    user.get().getEmailAddress()
-            );
-            user.get().setPasswordRecovery(true);
-            userRepository.save(user.get());
-            ApiResponse<String> response = new ApiResponse<>(
-                    "Check your email for the password reset link",
-                    "Success"
-            );
-            return new ResponseEntity<>(response, response.getStatus());
-        } else {
-            throw new MonieFlexException("Email not found");
-        }
-    }
-
-    @SneakyThrows
-    @Override
-    public String verifyResetPasswordLink(String token, HttpServletResponse response) {
-        String email = jwtImplementation.extractEmailAddressFromToken(token);
-        if(email != null) {
-            if(jwtImplementation.isExpired(token)) {
-                return "Link has expired. Please request for a new link.";
-            } else {
-                var user = userRepository.findByEmailAddress(email);
-                if(user.isPresent() && user.get().getPasswordRecovery()) {
-                    response.sendRedirect("http://localhost:3000/reset-password?token=%s".formatted(token));
-                    return "You can now change your password";
-                } else {
-                    return "User not found. Please check the link.";
-                }
-            }
-        } else {
-            return "Link is not properly formatted.";
-        }
-    }
-
-    @Override
-    public ResponseEntity<ApiResponse<String>> resetPassword(
-            String token, String password, String confirmPassword
-    ) {
-        String email = jwtImplementation.extractEmailAddressFromToken(token);
-        if(email != null) {
-            if(jwtImplementation.isExpired(token)) {
-                throw new MonieFlexException("Link has expired. Please request for a new link.");
-            } else {
-                var user = userRepository.findByEmailAddress(email);
-                if(user.isPresent() && user.get().getPasswordRecovery()) {
-                    if(password.equals(confirmPassword)) {
-                        user.get().setEncryptedPassword(passwordEncoder.encode(password));
-                        user.get().setPasswordRecovery(false);
-                        userRepository.save(user.get());
-                        ApiResponse<String> response = new ApiResponse<>(
-                                "Password changed for %s".formatted(user.get().getEmailAddress()),
-                                "Successfully changed password"
-                        );
-                        return new ResponseEntity<>(response, response.getStatus());
-                    } else {
-                        throw new MonieFlexException("Password does not match");
-                    }
-                } else {
-                    throw new MonieFlexException("User not found");
-                }
-            }
-        } else {
-            throw new MonieFlexException("Link is not properly formatted.");
-        }
-    }
-
-    @Override
     public ResponseEntity<ApiResponse<String>> resendLink(String email, VerifyType type) {
         var user = userRepository.findByEmailAddress(email);
         if(user.isPresent()) {
@@ -228,14 +148,7 @@ public class AuthImplementation implements AuthService {
                             user.get().getEmailAddress()
                     );
                 } else {
-                    emailImplementation.sendEmail(
-                            ForgotPasswordEmailTemplate.password(
-                                    user.get().getFirstName(),
-                                    generateToken(user.get(), expire)
-                            ),
-                            "Password Reset - Verify your email address",
-                            user.get().getEmailAddress()
-                    );
+                    /// TODO:: Send Reset Password email
                 }
                 ApiResponse<String> response = new ApiResponse<>(
                         "Check your email for verification",
