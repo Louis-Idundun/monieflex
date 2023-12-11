@@ -1,0 +1,28 @@
+package com.sq018.monieflex.payloads.vtpass;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class VtPassAirtimeResponse {
+    @JsonProperty("code")
+    public String code;
+    @JsonProperty("response_description")
+    public String responseDescription;
+    @JsonProperty("requestId")
+    public String requestId;
+    @JsonProperty("transactionId")
+    public String transactionId;
+    @JsonProperty("amount")
+    public String amount;
+    @JsonProperty("transaction_date")
+    public VtPassAirtimeTransactionDate transactionDate;
+    @JsonProperty("purchased_code")
+    public String purchasedCode;
+}
