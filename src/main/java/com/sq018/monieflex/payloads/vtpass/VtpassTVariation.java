@@ -15,6 +15,6 @@ public class VtpassTVariation {
     private String name;
     @JsonProperty("variation_amount")
     private String amount;
-    @JsonProperty("fixedPrice")
-    private String fixedPrice;
+//    @JsonProperty("fixedPrice")
+//    private String fixedPrice;
 }

@@ -1,6 +1,6 @@
 package com.sq018.monieflex.services.providers;
 
-import com.sq018.monieflex.dtos.UserDto;
+
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.vtpass.VtpassTVariationResponse;
 import com.sq018.monieflex.utils.VtpassEndpoints;
@@ -12,8 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.lang.reflect.ParameterizedType;
-import java.util.Objects;
+
 
 @Service
 public class VtPassService {
@@ -29,6 +28,8 @@ public class VtPassService {
     public VtPassService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
+
+
 
     public HttpHeaders vtPassPostHeader() {
         HttpHeaders headers = new HttpHeaders();
