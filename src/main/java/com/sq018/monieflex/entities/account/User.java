@@ -52,9 +52,6 @@ public class User extends BaseEntity implements UserDetails {
     @NotEmpty(message = "BVN should not be empty")
     private String bvn;
 
-    @Column(name = "password_recovery")
-    private Boolean passwordRecovery = false;
-
     @Column(name = "account_status")
     @Enumerated(value = EnumType.STRING)
     private AccountStatus status;

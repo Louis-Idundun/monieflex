@@ -18,7 +18,6 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<ProfileResponse>> viewProfile() {
-        System.out.println("Hi");
         ApiResponse<ProfileResponse> apiResponse = userService.viewProfile();
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
