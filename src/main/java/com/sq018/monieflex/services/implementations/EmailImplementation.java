@@ -1,8 +1,7 @@
-package com.sq018.monieflex.services.implementation;
+package com.sq018.monieflex.services.implementations;
 
 import com.sq018.monieflex.services.EmailService;
 import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,7 @@ import java.util.Date;
 @Slf4j
 @Service
 public class EmailImplementation implements EmailService {
-    private JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
 
     @Autowired
     public EmailImplementation(JavaMailSender mailSender) {

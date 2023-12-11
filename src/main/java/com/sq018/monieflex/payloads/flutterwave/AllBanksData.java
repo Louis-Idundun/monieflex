@@ -1,4 +1,4 @@
-package com.sq018.monieflex.payloads.flwallbankresponse;
+package com.sq018.monieflex.payloads.flutterwave;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

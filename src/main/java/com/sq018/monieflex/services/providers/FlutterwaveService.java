@@ -1,17 +1,21 @@
 package com.sq018.monieflex.services.providers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sq018.monieflex.dtos.FLWTransferDto;
 import com.sq018.monieflex.dtos.FLWVerifyAccountDto;
 import com.sq018.monieflex.dtos.FLWVirtualDto;
+import com.sq018.monieflex.dtos.TransferDto;
 import com.sq018.monieflex.entities.account.Wallet;
+import com.sq018.monieflex.entities.transactions.Transaction;
+import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.flutterwave.FLWTransferResponse;
 import com.sq018.monieflex.payloads.flutterwave.FLWVerifyAccountResponse;
 import com.sq018.monieflex.payloads.flutterwave.FLWVirtualAccountResponse;
 import com.sq018.monieflex.payloads.flutterwave.VerifyAccountResponse;
 import com.sq018.monieflex.payloads.flutterwave.VirtualAccountResponse;
-import com.sq018.monieflex.payloads.flwallbankresponse.AllBanksData;
-import com.sq018.monieflex.payloads.flwallbankresponse.FLWAllBanksResponse;
+import com.sq018.monieflex.payloads.flutterwave.AllBanksData;
+import com.sq018.monieflex.payloads.flutterwave.FLWAllBanksResponse;
 import com.sq018.monieflex.utils.FlutterwaveEndpoints;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +28,6 @@ import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Logger;
 
 @Slf4j
 @Service
@@ -81,7 +84,6 @@ public class FlutterwaveService {
         }
     }
 
-
     @SneakyThrows
     public ApiResponse<List<AllBanksData>> getAllBanks() {
 
@@ -104,9 +106,42 @@ public class FlutterwaveService {
         return new ApiResponse<>("Unable to process this request at this moment", HttpStatus.BAD_REQUEST, 99);
     }
 
+    public Transaction bankTransfer(TransferDto transfer, String reference) {
+        FLWTransferDto body = new FLWTransferDto(
+                transfer.bankCode(),
+                transfer.accountNumber(),
+                transfer.amount(),
+                transfer.narration(),
+                "NGN", reference
+        );
+        HttpEntity<FLWTransferDto> entity = new HttpEntity<>(body, getFlutterwaveHeader());
+        var response = rest.postForEntity(FlutterwaveEndpoints.TRANSFER, entity, FLWTransferResponse.class);
+        if(response.getStatusCode().is2xxSuccessful()) {
+            var responseBody = response.getBody();
+            if(Objects.requireNonNull(responseBody).getStatus().equalsIgnoreCase("success")) {
+                var data = responseBody.getData();
+                if(ObjectUtils.isNotEmpty(data)) {
+                    return getTransaction(data.getReference(), TransactionStatus.SUCCESSFUL);
+                } else {
+                    return getTransaction(reference, TransactionStatus.PENDING);
+                }
+            } else {
+                return getTransaction(reference, TransactionStatus.FAILED);
+            }
+        } else {
+            return getTransaction(reference, TransactionStatus.FAILED);
+        }
+    }
+
+    private Transaction getTransaction(String reference, TransactionStatus status) {
+        Transaction transaction = new Transaction();
+        transaction.setReference(reference);
+        transaction.setStatus(status);
+        return transaction;
+    }
 
     @SneakyThrows
-    public ApiResponse<VirtualAccountResponse> verifyBankAccount(FLWVerifyAccountDto verifyAccountDto) {
+    public ApiResponse<VerifyAccountResponse> verifyBankAccount(FLWVerifyAccountDto verifyAccountDto) {
         HttpEntity<FLWVerifyAccountDto> entity = new HttpEntity<>(verifyAccountDto, getFlutterwaveHeader());
         var request = rest.postForEntity(
                 FlutterwaveEndpoints.VERIFY_BANK_ACCOUNT,
@@ -117,7 +152,7 @@ public class FlutterwaveService {
             if(Objects.requireNonNull(body).getStatus().equalsIgnoreCase("success")) {
                 VerifyAccountResponse data = body.getData();
                 if(ObjectUtils.isNotEmpty(data)) {
-                    return new ApiResponse(
+                    return new ApiResponse<>(
                             data,
                             "Request successfully processed"
                     );
