@@ -121,7 +121,7 @@ public class WalletService {
     }
 
     public ApiResponse<WalletPayload> queryWalletDetails() {
-           String email = UserUtil.getLoginUser();
+        String email = UserUtil.getLoginUser();
         var wallet = walletRepository.findByUser_EmailAddressIgnoreCase(email).orElseThrow(
                 () -> new MonieFlexException("Invalid user id")
         );

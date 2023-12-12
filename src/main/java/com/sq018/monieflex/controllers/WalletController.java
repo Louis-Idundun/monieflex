@@ -43,13 +43,11 @@ public class WalletController {
         return new ResponseEntity<>(response, response.getStatus());
     }
 
-
     @GetMapping("/view-transactions")
     public ResponseEntity<ApiResponse<List<TransactionHistoryResponse>>> viewTransactions() {
         var response = walletService.queryHistory();
         return new ResponseEntity<>(response, response.getStatus());
     }
-
 
     @GetMapping("/details")
     public ResponseEntity<ApiResponse<WalletPayload>> fetchWalletDetails() {
