@@ -13,21 +13,21 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.UUID;
 
+
 @Service
 public class VtPassService {
-
-    @Value("${VTPASS_PUBLIC_KEY}")
+    @Value("${VT_PUBLIC_KEY}")
     private String PUBLIC_KEY;
-    @Value("${VTPASS_SECRET_KEY}")
+    @Value("${VT_SECRET_KEY}")
     private String SECRET_KEY;
-    @Value("${VTPASS_API_KEY}")
+    @Value("${VT_API_KEY}")
     private String API_KEY;
+
     private final RestTemplate restTemplate;
 
     public VtPassService(RestTemplate restTemplate) {
@@ -49,7 +49,6 @@ public class VtPassService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
     }
-
     public String generateRequestId() {
         StringBuilder result = new StringBuilder();
         String date = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE);
