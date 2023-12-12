@@ -8,4 +8,5 @@ import java.util.Optional;
 
 public interface WalletRepository extends JpaRepository<Wallet, Long> {
     Optional<Wallet> findByUser_EmailAddressIgnoreCase(@NonNull String emailAddress);
+    Optional<Wallet> findByUser_EmailAddress(String email);
 }
