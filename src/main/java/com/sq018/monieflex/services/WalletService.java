@@ -9,6 +9,7 @@ import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.TransactionHistoryResponse;
 import com.sq018.monieflex.payloads.flutterwave.VerifyAccountResponse;
 import com.sq018.monieflex.payloads.flutterwave.AllBanksData;
 import com.sq018.monieflex.repositories.TransactionRepository;
@@ -19,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -94,5 +96,24 @@ public class WalletService {
 
     public ApiResponse<VerifyAccountResponse> verifyBankAccount(FLWVerifyAccountDto accountDto) {
         return flutterwaveService.verifyBankAccount(accountDto);
+    }
+
+    public ApiResponse<List<TransactionHistoryResponse>> queryHistory() {
+        String email = UserUtil.getLoginUser();
+        var transactions = transactionRepository.findByUser_EmailAddress(email);
+        List<TransactionHistoryResponse> history = new ArrayList<>();
+        transactions.forEach(transaction -> {
+            TransactionHistoryResponse response = new TransactionHistoryResponse();
+            response.setAccount(transaction.getAccount());
+            response.setId(transaction.getId());
+            response.setAmount(transaction.getAmount());
+            response.setStatus(transaction.getStatus());
+            response.setBillType(transaction.getBillType());
+            response.setProviderReference(transaction.getProviderReference());
+            response.setTransactionType(transaction.getTransactionType());
+            response.setReceivingBankName(transaction.getReceivingBankName());
+            history.add(response);
+        });
+        return new ApiResponse<>(history, "Transaction History successfully fetched");
     }
 }
