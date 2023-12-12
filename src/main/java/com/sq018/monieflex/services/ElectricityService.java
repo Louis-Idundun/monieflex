@@ -39,10 +39,14 @@ public class ElectricityService {
             transaction.setReference(vtPassService.generateRequestId());
             transaction.setAmount(BigDecimal.valueOf(electricityDto.amount()));
             transaction.setTransactionType(TransactionType.BILLS);
+            transaction.setBillVariation(electricityDto.serviceID().toUpperCase());
             transactionRepository.save(transaction);
 
             var response = vtPassService.electricitySubscription(electricityDto, transaction);
             if(response.getReference().equals(transaction.getReference())) {
+                if(response.getStatus() == TransactionStatus.FAILED) {
+                    userUtil.updateWalletBalance(response.getAmount(), false);
+                }
                 transactionRepository.save(response);
                 return new ApiResponse<>(
                         response.getAccount(),

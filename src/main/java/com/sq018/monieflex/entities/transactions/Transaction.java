@@ -2,6 +2,7 @@ package com.sq018.monieflex.entities.transactions;
 
 import com.sq018.monieflex.entities.BaseEntity;
 import com.sq018.monieflex.entities.account.User;
+import com.sq018.monieflex.enums.ElectricityType;
 import com.sq018.monieflex.enums.NetworkType;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.enums.TransactionType;
@@ -49,6 +50,9 @@ public class Transaction extends BaseEntity {
 
     @Column(name = "narration")
     private String narration;
+
+    @Column(name = "variation")
+    private String billVariation;
 
     @ManyToOne
     @JoinColumn(

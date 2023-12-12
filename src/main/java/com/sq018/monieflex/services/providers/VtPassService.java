@@ -1,16 +1,10 @@
 package com.sq018.monieflex.services.providers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sq018.monieflex.dtos.ElectricityDto;
 import com.sq018.monieflex.dtos.VtPassElectricityDto;
-import com.sq018.monieflex.dtos.VtPassVerifyMeterDto;
 import com.sq018.monieflex.entities.transactions.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
-import com.sq018.monieflex.exceptions.PaymentException;
 import com.sq018.monieflex.payloads.vtpass.VtPassElectricityResponse;
-import com.sq018.monieflex.payloads.vtpass.VtPassErrorResponse;
-import com.sq018.monieflex.payloads.vtpass.VtPassVerifyMeterResponse;
 import com.sq018.monieflex.utils.VtpassEndpoints;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
@@ -69,7 +62,7 @@ public class VtPassService {
 
     @SneakyThrows
     public Transaction electricitySubscription(ElectricityDto electricityDto, Transaction transaction) {
-        VtPassElectricityDto vtElectricty = new VtPassElectricityDto(
+        VtPassElectricityDto vtElectricity = new VtPassElectricityDto(
                 transaction.getReference(),
                 electricityDto.serviceID(),
                 electricityDto.billersCode(),
@@ -77,49 +70,22 @@ public class VtPassService {
                 electricityDto.amount(),
                 electricityDto.phone()
         );
-        VtPassVerifyMeterDto verifyMeter = new VtPassVerifyMeterDto(
-                vtElectricty.variationCode(),
-                vtElectricty.serviceID(),
-                vtElectricty.billersCode()
+        HttpEntity<VtPassElectricityDto> buyBody = new HttpEntity<>(vtElectricity, vtPassPostHeader());
+        var buyResponse = restTemplate.postForEntity(
+                VtpassEndpoints.PAY,
+                buyBody, VtPassElectricityResponse.class
         );
-        HttpEntity<VtPassVerifyMeterDto> verifyBody = new HttpEntity<>(verifyMeter, vtPassPostHeader());
-        var verifyResponse = restTemplate.postForObject(
-                VtpassEndpoints.VERIFY_NUMBER,
-                verifyBody, Object.class
-        );
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            mapper.readValue(mapper.writeValueAsString(verifyResponse), VtPassVerifyMeterResponse.class);
-            HttpEntity<VtPassElectricityDto> buyBody = new HttpEntity<>(vtElectricty, vtPassPostHeader());
-            var buyResponse = restTemplate.postForEntity(
-                    VtpassEndpoints.PAY,
-                    buyBody, VtPassElectricityResponse.class
-            );
-            if(Objects.requireNonNull(buyResponse.getBody()).getResponseDescription().toLowerCase().contains("success")) {
-                var reference = buyResponse.getBody().getToken() != null
-                        ? buyResponse.getBody().getToken()
-                        : buyResponse.getBody().getExchangeReference();
-                transaction.setNarration("Electricity Billing");
-                transaction.setReference(buyResponse.getBody().getRequestId());
-                transaction.setProviderReference(reference);
-                transaction.setStatus(TransactionStatus.SUCCESSFUL);
-                return transaction;
-            } else {
-                transaction.setStatus(TransactionStatus.FAILED);
-                throw new PaymentException(
-                        buyResponse.getBody().getResponseDescription(),
-                        BigDecimal.valueOf(electricityDto.amount()),
-                        transaction
-                );
-            }
-        } catch (JsonProcessingException e) {
-            var result = mapper.readValue(mapper.writeValueAsString(verifyResponse), VtPassErrorResponse.class);
+        if(Objects.requireNonNull(buyResponse.getBody()).getResponseDescription().toLowerCase().contains("success")) {
+            var reference = buyResponse.getBody().getToken() != null
+                    ? buyResponse.getBody().getToken()
+                    : buyResponse.getBody().getExchangeReference();
+            transaction.setNarration("Electricity Billing");
+            transaction.setReference(buyResponse.getBody().getRequestId());
+            transaction.setProviderReference(reference);
+            transaction.setStatus(TransactionStatus.SUCCESSFUL);
+        } else {
             transaction.setStatus(TransactionStatus.FAILED);
-            throw new PaymentException(
-                    result.getResponseDescription(),
-                    BigDecimal.valueOf(electricityDto.amount()),
-                    transaction
-            );
         }
+        return transaction;
     }
 }
