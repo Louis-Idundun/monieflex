@@ -1,6 +1,5 @@
 package com.sq018.monieflex.controllers;
 
-
 import com.sq018.monieflex.payloads.vtpass.VtpassDataVariationResponse;
 import com.sq018.monieflex.services.providers.VtPassService;
 import lombok.RequiredArgsConstructor;

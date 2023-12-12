@@ -1,11 +1,14 @@
 package com.sq018.monieflex.services;
 
+import com.sq018.monieflex.dtos.ChangePasswordDto;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.ProfileResponse;
 import com.sq018.monieflex.repositories.UserRepository;
 import com.sq018.monieflex.utils.UserUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -15,6 +18,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public ApiResponse<ProfileResponse> viewProfile() {
         String email = UserUtil.getLoginUser();
@@ -35,4 +39,24 @@ public class UserService {
         }
     }
 
+    public ResponseEntity<ApiResponse<String>> changePassword(ChangePasswordDto changePasswordDto) {
+        var email = UserUtil.getLoginUser();
+        var user = userRepository.findByEmailAddress(email);
+        if(user.isPresent()) {
+            if(changePasswordDto.newPassword().equals(changePasswordDto.confirmPassword())) {
+                user.get().setEncryptedPassword(passwordEncoder.encode(changePasswordDto.newPassword()));
+                userRepository.save(user.get());
+
+                ApiResponse<String> response = new ApiResponse<>(
+                        "New password",
+                        "Password successfully changed"
+                );
+                return new ResponseEntity<>(response, response.getStatus());
+            } else {
+                throw new MonieFlexException("Password does not match");
+            }
+        } else {
+            throw new MonieFlexException("User not found");
+        }
+    }
 }

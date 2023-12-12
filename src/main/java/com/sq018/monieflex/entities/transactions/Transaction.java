@@ -2,7 +2,7 @@ package com.sq018.monieflex.entities.transactions;
 
 import com.sq018.monieflex.entities.BaseEntity;
 import com.sq018.monieflex.entities.account.User;
-import com.sq018.monieflex.enums.NetworkType;
+import com.sq018.monieflex.enums.BillType;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.enums.TransactionType;
 import jakarta.persistence.*;
@@ -39,16 +39,16 @@ public class Transaction extends BaseEntity {
     @Column(name = "provider_reference")
     private String providerReference;
 
-    @Column(name = "network_type")
-    @Enumerated(value = EnumType.STRING)
-    private NetworkType networkType;
-
     @Column(name = "reference")
     @NotEmpty(message = "Reference should not be empty")
     private String reference;
 
     @Column(name = "narration")
     private String narration;
+
+    @Column(name = "bill_type")
+    @Enumerated(value = EnumType.STRING)
+    private BillType billType;
 
     @ManyToOne
     @JoinColumn(

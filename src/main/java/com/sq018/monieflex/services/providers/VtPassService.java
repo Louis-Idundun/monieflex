@@ -11,8 +11,16 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+
+
 @Service
 public class VtPassService {
+    @Value("${VT_PUBLIC_KEY}")
+    private String PUBLIC_KEY;
+    @Value("${VT_SECRET_KEY}")
+    private String SECRET_KEY;
+    @Value("${VT_API_KEY}")
+    private String API_KEY;
 
     @Value("${VT_PUBLIC_KEY}")
     private String PUBLIC_KEY;
@@ -35,6 +43,7 @@ public class VtPassService {
         return headers;
     }
 
+
     public HttpHeaders vtPassGetHeader(){
         HttpHeaders headers = new HttpHeaders();
         headers.set("api-key", API_KEY);
@@ -43,16 +52,17 @@ public class VtPassService {
         return headers;
     }
 
+
     public VtpassDataVariationResponse getDataVariations(String code){
         HttpEntity<Object> entity = new HttpEntity<>(vtPassGetHeader());
         var response = restTemplate.exchange(
                 VtpassEndpoints.VARIATION_URL(code), HttpMethod.GET, entity, VtpassDataVariationResponse.class
         );
         if(response.getStatusCode().is2xxSuccessful()){
+
             return response.getBody();
         } else {
             throw new MonieFlexException("Request failed");
         }
     }
-
 }
