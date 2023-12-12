@@ -10,9 +10,11 @@ import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.TransactionHistoryResponse;
+import com.sq018.monieflex.payloads.WalletPayload;
 import com.sq018.monieflex.payloads.flutterwave.VerifyAccountResponse;
 import com.sq018.monieflex.payloads.flutterwave.AllBanksData;
 import com.sq018.monieflex.repositories.TransactionRepository;
+import com.sq018.monieflex.repositories.WalletRepository;
 import com.sq018.monieflex.services.providers.FlutterwaveService;
 import com.sq018.monieflex.utils.UserUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ import java.util.UUID;
 public class WalletService {
     private final FlutterwaveService flutterwaveService;
     private final TransactionRepository transactionRepository;
+    private final WalletRepository walletRepository;
     private final UserUtil userUtil;
 
     protected String generateTxRef() {
@@ -115,5 +118,18 @@ public class WalletService {
             history.add(response);
         });
         return new ApiResponse<>(history, "Transaction History successfully fetched");
+    }
+
+    public ApiResponse<WalletPayload> queryWalletDetails() {
+           String email = UserUtil.getLoginUser();
+        var wallet = walletRepository.findByUser_EmailAddressIgnoreCase(email).orElseThrow(
+                () -> new MonieFlexException("Invalid user id")
+        );
+        WalletPayload payload = new WalletPayload();
+        payload.setBalance(wallet.getBalance());
+        payload.setNumber(wallet.getNumber());
+        payload.setBankName(wallet.getBankName());
+
+        return new ApiResponse<>(payload, "Wallet successfully fetched");
     }
 }

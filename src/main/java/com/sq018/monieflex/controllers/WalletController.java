@@ -4,6 +4,7 @@ import com.sq018.monieflex.dtos.FLWVerifyAccountDto;
 import com.sq018.monieflex.dtos.TransferDto;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.TransactionHistoryResponse;
+import com.sq018.monieflex.payloads.WalletPayload;
 import com.sq018.monieflex.payloads.flutterwave.AllBanksData;
 import com.sq018.monieflex.services.WalletService;
 import lombok.RequiredArgsConstructor;
@@ -42,9 +43,17 @@ public class WalletController {
         return new ResponseEntity<>(response, response.getStatus());
     }
 
+
     @GetMapping("/view-transactions")
     public ResponseEntity<ApiResponse<List<TransactionHistoryResponse>>> viewTransactions() {
         var response = walletService.queryHistory();
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+
+    @GetMapping("/details")
+    public ResponseEntity<ApiResponse<WalletPayload>> fetchWalletDetails() {
+        var response = walletService.queryWalletDetails();
         return new ResponseEntity<>(response, response.getStatus());
     }
 }
