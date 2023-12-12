@@ -47,16 +47,5 @@ public class VtPassService {
         return headers;
     }
 
-    public VtpassTVariationResponse getTvVariations(String code) {
-        HttpEntity<Object> entity = new HttpEntity<>(vtPassGetHeader());
-        var response = restTemplate.exchange(
-                VtpassEndpoints.VARIATION_URL(code), HttpMethod.GET, entity,
-                VtpassTVariationResponse.class
-        );
-        if(response.getStatusCode().is2xxSuccessful()) {
-            return response.getBody();
-        } else {
-            throw new MonieFlexException("Request failed");
-        }
-    }
+
 }
