@@ -1,12 +1,8 @@
 package com.sq018.monieflex.services.providers;
 
-import com.sq018.monieflex.exceptions.MonieFlexException;
-import com.sq018.monieflex.payloads.vtpass.VtpassDataVariationResponse;
-import com.sq018.monieflex.utils.VtpassEndpoints;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
