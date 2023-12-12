@@ -2,6 +2,7 @@ package com.sq018.monieflex.entities.transactions;
 
 import com.sq018.monieflex.entities.BaseEntity;
 import com.sq018.monieflex.entities.account.User;
+import com.sq018.monieflex.enums.BillType;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.enums.TransactionType;
 import jakarta.persistence.*;
@@ -47,6 +48,10 @@ public class Transaction extends BaseEntity {
 
     @Column(name = "variation")
     private String billVariation;
+
+    @Column(name = "bill_type")
+    @Enumerated(value = EnumType.STRING)
+    private BillType billType;
 
     @ManyToOne
     @JoinColumn(
