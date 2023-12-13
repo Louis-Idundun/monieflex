@@ -3,7 +3,6 @@ package com.sq018.monieflex.services;
 
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.vtpass.VtpassTVariation;
-import com.sq018.monieflex.payloads.vtpass.VtpassTVariationResponse;
 import com.sq018.monieflex.services.providers.VtPassService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
