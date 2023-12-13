@@ -18,7 +18,7 @@ public class UtilityBillController {
     private final DataService dataService;
 
      @GetMapping("/tv-variations")
-     public ResponseEntity<ApiResponse<List<VtpassTVariation>>> viewTvVariation(@RequestParam String code) {
+     public ResponseEntity<ApiResponse<List<VtpassTVariation>>> fetchTvVariation(@RequestParam String code) {
          var response = tvService.viewTvVariations(code);
          return new ResponseEntity<>(response, response.getStatus());
 
