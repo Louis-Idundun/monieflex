@@ -44,8 +44,10 @@ public class WalletController {
     }
 
     @GetMapping("/view-transactions")
-    public ResponseEntity<ApiResponse<List<TransactionHistoryResponse>>> viewTransactions() {
-        var response = walletService.queryHistory();
+    public ResponseEntity<ApiResponse<List<TransactionHistoryResponse>>> viewTransactions(
+            @RequestParam Integer page, @RequestParam Integer size
+    ) {
+        var response = walletService.queryHistory(page, size);
         return new ResponseEntity<>(response, response.getStatus());
     }
 
