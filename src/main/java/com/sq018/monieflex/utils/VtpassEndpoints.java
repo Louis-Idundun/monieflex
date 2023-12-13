@@ -6,12 +6,21 @@ public class VtpassEndpoints {
 
     /**
      * ServiceID(Data) = mtn, glo, airtel, nine-mobile
+=======
+
+
+public class VtpassEndpoints {
+    private static final String BASE_URL = "https://sandbox.vtpass.com/api";
+
+    /**
+     * ServiceID(Tv) = gotv, dstv, startimes, showmax
+     * ServiceID = gotv, dstv, startimes, showmax
+>>>>>>> 84b3ebf0930812096b6c6b64c5a010ba12009be1
      */
 
     public static String VARIATION_URL(String id) {
         return BASE_URL + "/service-variations?serviceID=%s".formatted(id);
     }
-
 
     public static String PAY = BASE_URL + "/pay";
 
