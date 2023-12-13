@@ -46,6 +46,9 @@ public class Transaction extends BaseEntity {
     @Column(name = "narration")
     private String narration;
 
+    @Column(name = "variation")
+    private String billVariation;
+
     @Column(name = "bill_type")
     @Enumerated(value = EnumType.STRING)
     private BillType billType;
