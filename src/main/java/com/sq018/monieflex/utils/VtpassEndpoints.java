@@ -1,7 +1,5 @@
 package com.sq018.monieflex.utils;
 
-
-
 public class VtpassEndpoints {
     private static final String BASE_URL = "https://sandbox.vtpass.com/api";
 
