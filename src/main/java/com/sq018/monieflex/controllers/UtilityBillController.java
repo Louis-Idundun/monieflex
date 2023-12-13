@@ -11,8 +11,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.sq018.monieflex.dtos.VtPassVerifySmartCardDto;
+import com.sq018.monieflex.payloads.vtpass.TvSubscriptionQueryContent;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/bill")
 @RequiredArgsConstructor
 public class UtilityBillController {
     private final TvService tvService;
@@ -31,10 +38,17 @@ public class UtilityBillController {
         return new ResponseEntity<>(response, response.getStatus());
     }
 
-
     @PostMapping("/airtime")
     public ResponseEntity<ApiResponse<String>> airtime(@RequestBody AirtimeDto body) {
         var response = airtimeService.buyAirtime(body);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+    @PostMapping("/verify-smart-card")
+    public ResponseEntity<ApiResponse<TvSubscriptionQueryContent>> queryTvAccount(
+            @RequestBody VtPassVerifySmartCardDto smartCard
+    ) {
+        var response = tvService.queryTvAccount(smartCard);
         return new ResponseEntity<>(response, response.getStatus());
     }
 }

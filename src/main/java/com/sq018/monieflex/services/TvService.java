@@ -7,13 +7,17 @@ import com.sq018.monieflex.utils.VtpassEndpoints;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import com.sq018.monieflex.dtos.VtPassVerifySmartCardDto;
+import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.vtpass.TvSubscriptionQueryContent;
+import com.sq018.monieflex.services.providers.VtPassService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
 public class TvService {
-
     private final VtPassService vtPassService;
     private final RestTemplate restTemplate;
 
@@ -28,5 +32,9 @@ public class TvService {
         } else {
             throw new MonieFlexException("Request failed");
         }
+    }
+
+    public ApiResponse<TvSubscriptionQueryContent> queryTvAccount(VtPassVerifySmartCardDto smartCard) {
+        return vtPassService.queryTVAccount(smartCard);
     }
 }
