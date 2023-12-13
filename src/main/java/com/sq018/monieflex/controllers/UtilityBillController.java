@@ -3,7 +3,6 @@ package com.sq018.monieflex.controllers;
 
 import com.sq018.monieflex.dtos.DataSubscriptionDto;
 import com.sq018.monieflex.payloads.vtpass.VtpassDataVariation;
-import com.sq018.monieflex.payloads.vtpass.VtpassDataVariationResponse;
 import com.sq018.monieflex.services.DataService;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.vtpass.VtpassTVariationResponse;

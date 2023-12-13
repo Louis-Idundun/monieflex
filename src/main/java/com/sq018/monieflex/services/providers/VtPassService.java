@@ -6,10 +6,13 @@ import com.sq018.monieflex.dtos.VtpassDataSubscriptionDto;
 import com.sq018.monieflex.entities.transactions.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.exceptions.MonieFlexException;
+import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.vtpass.VtpassDataSubscriptionResponse;
+import com.sq018.monieflex.payloads.vtpass.VtpassDataVariation;
 import com.sq018.monieflex.payloads.vtpass.VtpassDataVariationResponse;
 import com.sq018.monieflex.utils.VtpassEndpoints;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -65,16 +69,21 @@ public class VtPassService {
         return result.toString();
     }
 
-    public VtpassDataVariationResponse getDataVariations(String code){
+    public ApiResponse<List<VtpassDataVariation>> getDataVariations(String code){
         HttpEntity<Object> entity = new HttpEntity<>(vtPassGetHeader());
         var response = restTemplate.exchange(
                 VtpassEndpoints.VARIATION_URL(code), HttpMethod.GET, entity, VtpassDataVariationResponse.class
         );
         if(response.getStatusCode().is2xxSuccessful()){
-            return response.getBody();
-        } else {
-            throw new MonieFlexException("Request failed");
+            if(Objects.requireNonNull(response.getBody()).getDescription().equalsIgnoreCase("000")){
+                if(ObjectUtils.isNotEmpty(response.getBody().getContent().getVariations())){
+                    return new ApiResponse<>(
+                            response.getBody().getContent().getVariations(),
+                            "Request successfully processed");
+                }
+            }
         }
+            throw new MonieFlexException("Request failed");
     }
 
     @SneakyThrows
