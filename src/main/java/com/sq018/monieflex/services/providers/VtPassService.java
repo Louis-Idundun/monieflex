@@ -4,10 +4,16 @@ import com.sq018.monieflex.dtos.*;
 import com.sq018.monieflex.entities.transactions.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.payloads.vtpass.VtPassElectricityResponse;
+import com.sq018.monieflex.exceptions.MonieFlexException;
+import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.vtpass.VtpassDataSubscriptionResponse;
+import com.sq018.monieflex.payloads.vtpass.VtpassTVariation;
+import com.sq018.monieflex.payloads.vtpass.VtpassTVariationResponse;
 import com.sq018.monieflex.utils.VtpassEndpoints;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import com.sq018.monieflex.dtos.AirtimeDto;
 import com.sq018.monieflex.dtos.VtPassAirtimeDto;
 import com.sq018.monieflex.payloads.vtpass.VtPassAirtimeResponse;
@@ -16,8 +22,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -59,6 +67,25 @@ public class VtPassService {
         result.append(LocalDateTime.now().getMinute());
         result.append(UUID.randomUUID().toString(), 0, 15);
         return result.toString();
+    }
+
+    public ApiResponse<List<VtpassTVariation>> getTvVariations(String code) {
+        HttpEntity<Object> entity = new HttpEntity<>(vtPassGetHeader());
+        var response = restTemplate.exchange(
+                VtpassEndpoints.VARIATION_URL(code), HttpMethod.GET, entity,
+                VtpassTVariationResponse.class
+        );
+        if(response.getStatusCode().is2xxSuccessful()) {
+            if(Objects.requireNonNull(response.getBody()).getDescription().equalsIgnoreCase("000")) {
+                if(ObjectUtils.isNotEmpty(response.getBody().getContent().getVariations())) {
+                    return new ApiResponse<>(
+                            response.getBody().getContent().getVariations(),
+                            "Request Successfully processed"
+                    );
+                }
+            }
+        }
+        throw new MonieFlexException("Request failed");
     }
 
     @SneakyThrows
