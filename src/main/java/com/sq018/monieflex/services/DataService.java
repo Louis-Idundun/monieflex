@@ -4,10 +4,7 @@ package com.sq018.monieflex.services;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.vtpass.VtpassDataVariationResponse;
 import com.sq018.monieflex.services.providers.VtPassService;
-import com.sq018.monieflex.utils.VtpassEndpoints;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import com.sq018.monieflex.dtos.DataSubscriptionDto;
 import com.sq018.monieflex.entities.transactions.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
@@ -17,7 +14,6 @@ import com.sq018.monieflex.repositories.TransactionRepository;
 import com.sq018.monieflex.repositories.UserRepository;
 import com.sq018.monieflex.utils.UserUtil;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 
