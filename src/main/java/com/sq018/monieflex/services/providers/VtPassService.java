@@ -1,12 +1,9 @@
 package com.sq018.monieflex.services.providers;
 
-import com.sq018.monieflex.dtos.ElectricityDto;
-import com.sq018.monieflex.dtos.VtPassElectricityDto;
+import com.sq018.monieflex.dtos.*;
 import com.sq018.monieflex.entities.transactions.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.payloads.vtpass.VtPassElectricityResponse;
-import com.sq018.monieflex.dtos.DataSubscriptionDto;
-import com.sq018.monieflex.dtos.VtpassDataSubscriptionDto;
 import com.sq018.monieflex.payloads.vtpass.VtpassDataSubscriptionResponse;
 import com.sq018.monieflex.utils.VtpassEndpoints;
 import lombok.SneakyThrows;

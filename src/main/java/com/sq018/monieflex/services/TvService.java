@@ -1,5 +1,6 @@
 package com.sq018.monieflex.services;
 
+
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.vtpass.VtpassTVariationResponse;
 import com.sq018.monieflex.services.providers.VtPassService;
@@ -23,7 +24,7 @@ public class TvService {
                 VtpassEndpoints.VARIATION_URL(code), HttpMethod.GET, entity,
                 VtpassTVariationResponse.class
         );
-        if(response.getStatusCode().is2xxSuccessful()) {
+        if (response.getStatusCode().is2xxSuccessful()) {
             return response.getBody();
         } else {
             throw new MonieFlexException("Request failed");
