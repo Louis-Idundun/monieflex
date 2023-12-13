@@ -8,6 +8,9 @@ import com.sq018.monieflex.payloads.vtpass.VtpassDataSubscriptionResponse;
 import com.sq018.monieflex.utils.VtpassEndpoints;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
+import com.sq018.monieflex.dtos.AirtimeDto;
+import com.sq018.monieflex.dtos.VtPassAirtimeDto;
+import com.sq018.monieflex.payloads.vtpass.VtPassAirtimeResponse;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -18,14 +21,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.UUID;
 
-
 @Service
 public class VtPassService {
-    @Value("${VT_PUBLIC_KEY}")
+    @Value("${monieFlex.vtPass.public-key}")
     private String PUBLIC_KEY;
-    @Value("${VT_SECRET_KEY}")
+    @Value("${monieFlex.vtPass.secret-key}")
     private String SECRET_KEY;
-    @Value("${VT_API_KEY}")
+    @Value("${moniFlex.vtPass.api-key}")
     private String API_KEY;
 
     private final RestTemplate restTemplate;
@@ -55,7 +57,7 @@ public class VtPassService {
         result.append(date.replaceAll("-", ""));
         result.append(LocalDateTime.now().getHour());
         result.append(LocalDateTime.now().getMinute());
-        result.append(UUID.randomUUID());
+        result.append(UUID.randomUUID().toString(), 0, 15);
         return result.toString();
     }
 
@@ -111,6 +113,31 @@ public class VtPassService {
             transaction.setReference(buyResponse.getBody().getRequestId());
             transaction.setProviderReference(reference);
             transaction.setStatus(TransactionStatus.SUCCESSFUL);
+        } else {
+            transaction.setStatus(TransactionStatus.FAILED);
+        }
+        return transaction;
+    }
+
+    public Transaction buyAirtime(AirtimeDto airtime, Transaction transaction) {
+        VtPassAirtimeDto airtimeDto = new VtPassAirtimeDto(
+                generateRequestId(),
+                airtime.network().toLowerCase(),
+                airtime.amount(),
+                airtime.phoneNumber()
+        );
+        HttpEntity<VtPassAirtimeDto> entity = new HttpEntity<>(airtimeDto, vtPassPostHeader());
+        System.out.println(entity.getHeaders());
+        var response = restTemplate.postForEntity(
+                VtpassEndpoints.PAY, entity, VtPassAirtimeResponse.class
+        );
+        System.out.println("::::::: " + response);
+        System.out.println(response.getBody());
+        if(Objects.requireNonNull(response.getBody()).responseDescription.toLowerCase().contains("success")) {
+            var data = response.getBody();
+            transaction.setStatus(TransactionStatus.SUCCESSFUL);
+            transaction.setProviderReference(data.getTransactionId());
+            transaction.setUpdatedAt(LocalDateTime.now());
         } else {
             transaction.setStatus(TransactionStatus.FAILED);
         }

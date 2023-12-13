@@ -2,10 +2,12 @@ package com.sq018.monieflex.controllers;
 
 
 import com.sq018.monieflex.dtos.ElectricityDto;
+import com.sq018.monieflex.dtos.AirtimeDto;
+import com.sq018.monieflex.dtos.DataSubscriptionDto;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.services.ElectricityService;
-import com.sq018.monieflex.dtos.DataSubscriptionDto;
 import com.sq018.monieflex.payloads.vtpass.VtpassTVariationResponse;
+import com.sq018.monieflex.services.AirtimeService;
 import com.sq018.monieflex.services.DataService;
 import com.sq018.monieflex.services.TvService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class UtilityBillController {
     private final ElectricityService electricityService;
     private final TvService tvService;
     private final DataService dataService;
+    private final AirtimeService airtimeService;
 
     @PostMapping("/electricity")
     public ResponseEntity<ApiResponse<String>> buyElectricity(@RequestBody ElectricityDto dto) {
@@ -42,6 +45,13 @@ public class UtilityBillController {
     @PostMapping("/data-purchase")
     public ResponseEntity<ApiResponse<String>> buyData(@RequestBody DataSubscriptionDto dataSubscriptionDto){
         var response = dataService.buyData(dataSubscriptionDto);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+
+    @PostMapping("/airtime")
+    public ResponseEntity<ApiResponse<String>> airtime(@RequestBody AirtimeDto body) {
+        var response = airtimeService.buyAirtime(body);
         return new ResponseEntity<>(response, response.getStatus());
     }
 }
