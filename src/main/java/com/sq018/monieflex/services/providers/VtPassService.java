@@ -62,7 +62,7 @@ public class VtPassService {
         result.append(date.replaceAll("-", ""));
         result.append(LocalDateTime.now().getHour());
         result.append(LocalDateTime.now().getMinute());
-        result.append(UUID.randomUUID().toString().substring(0, 15));
+        result.append(UUID.randomUUID().toString(), 0, 15);
         return result.toString();
     }
 
