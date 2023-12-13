@@ -2,6 +2,7 @@ package com.sq018.monieflex.controllers;
 
 
 import com.sq018.monieflex.dtos.DataSubscriptionDto;
+import com.sq018.monieflex.payloads.vtpass.VtpassDataVariation;
 import com.sq018.monieflex.payloads.vtpass.VtpassDataVariationResponse;
 import com.sq018.monieflex.services.DataService;
 import com.sq018.monieflex.payloads.ApiResponse;
@@ -12,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 public class UtilityBillController {
@@ -21,9 +24,9 @@ public class UtilityBillController {
     private final TvService tvService;
 
     @GetMapping("/data-variations")
-    public ResponseEntity<VtpassDataVariationResponse> fetchDataVariation(@RequestParam String code) {
+    public ResponseEntity<ApiResponse<List<VtpassDataVariation>>> fetchDataVariation(@RequestParam String code) {
         var response = dataService.viewDataVariations(code);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, response.getStatus());
 
     }
 

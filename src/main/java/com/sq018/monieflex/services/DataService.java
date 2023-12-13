@@ -2,6 +2,7 @@ package com.sq018.monieflex.services;
 
 
 import com.sq018.monieflex.exceptions.MonieFlexException;
+import com.sq018.monieflex.payloads.vtpass.VtpassDataVariation;
 import com.sq018.monieflex.payloads.vtpass.VtpassDataVariationResponse;
 import com.sq018.monieflex.services.providers.VtPassService;
 import lombok.RequiredArgsConstructor;
@@ -13,9 +14,11 @@ import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.repositories.TransactionRepository;
 import com.sq018.monieflex.repositories.UserRepository;
 import com.sq018.monieflex.utils.UserUtil;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,9 +31,11 @@ public class DataService {
     private final VtPassService vtPassService;
 
 
-    public VtpassDataVariationResponse viewDataVariations(String code){
+    public ApiResponse<List<VtpassDataVariation>> viewDataVariations(String code){
         VtpassDataVariationResponse response = vtPassService.getDataVariations(code);
-        return response;
+        List<VtpassDataVariation> result = response.getContent().getVariations();
+
+        return new ApiResponse<>(result, "Successful", HttpStatus.OK);
     }
 
 
