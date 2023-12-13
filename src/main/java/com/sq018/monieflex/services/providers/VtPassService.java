@@ -2,6 +2,8 @@ package com.sq018.monieflex.services.providers;
 
 import com.sq018.monieflex.dtos.AirtimeDto;
 import com.sq018.monieflex.dtos.VtPassAirtimeDto;
+import com.sq018.monieflex.entities.transactions.Transaction;
+import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.vtpass.VtPassAirtimeResponse;
 import com.sq018.monieflex.utils.VtpassEndpoints;
@@ -48,20 +50,20 @@ public class VtPassService {
         return headers;
     }
 
-    protected String generateRequestId() {
+    public String generateRequestId() {
         StringBuilder result = new StringBuilder();
         String date = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE);
         result.append(date.replaceAll("-", ""));
         result.append(LocalDateTime.now().getHour());
         result.append(LocalDateTime.now().getMinute());
-        result.append(UUID.randomUUID().toString().substring(0, 15));
+        result.append(UUID.randomUUID());
         return result.toString();
     }
 
-    public VtPassAirtimeResponse buyAirtime(AirtimeDto airtime) {
+    public Transaction buyAirtime(AirtimeDto airtime, Transaction transaction) {
         VtPassAirtimeDto airtimeDto = new VtPassAirtimeDto(
                 generateRequestId(),
-                airtime.network(),
+                airtime.network().toLowerCase(),
                 airtime.amount(),
                 airtime.phoneNumber()
         );
@@ -70,14 +72,15 @@ public class VtPassService {
         var response = restTemplate.postForEntity(
                 VtpassEndpoints.BUY_AIRTIME, entity, VtPassAirtimeResponse.class
         );
-        return response.getBody();
-//        System.out.println(response.getBody().responseDescription);
-//        if(response.getStatusCode().is2xxSuccessful()) {
-//            var data = response.getBody();
-//            if(Objects.requireNonNull(data).responseDescription.toLowerCase().contains("success")) {
-//                return data;
-//            }
-//        }
-//        throw new MonieFlexException("You cannot reap where you did not sow! OLE!!!!");
+        System.out.println(response.getBody());
+        if(Objects.requireNonNull(response.getBody()).responseDescription.toLowerCase().contains("success")) {
+            var data = response.getBody();
+            transaction.setStatus(TransactionStatus.SUCCESSFUL);
+            transaction.setProviderReference(data.getTransactionId());
+            transaction.setUpdatedAt(LocalDateTime.now());
+        } else {
+            transaction.setStatus(TransactionStatus.FAILED);
+        }
+        return transaction;
     }
 }

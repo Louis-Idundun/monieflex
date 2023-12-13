@@ -32,6 +32,9 @@ public class Transaction extends BaseEntity {
     @Column(name = "receiving_bank_code")
     private String receivingBankCode;
 
+    @Column(name = "receiver_name")
+    private String receiverName;
+
     @Column(name = "transaction_type")
     @Enumerated(value = EnumType.STRING)
     private TransactionType transactionType;
