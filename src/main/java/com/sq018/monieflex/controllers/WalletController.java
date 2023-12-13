@@ -3,6 +3,7 @@ package com.sq018.monieflex.controllers;
 import com.sq018.monieflex.dtos.FLWVerifyAccountDto;
 import com.sq018.monieflex.dtos.TransferDto;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.TransactionHistoryResponse;
 import com.sq018.monieflex.payloads.WalletPayload;
 import com.sq018.monieflex.payloads.flutterwave.AllBanksData;
 import com.sq018.monieflex.services.WalletService;
@@ -39,6 +40,14 @@ public class WalletController {
     ) {
         var response = walletService.transferToBank(dto);
         System.out.println(user.getUsername());
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+    @GetMapping("/view-transactions")
+    public ResponseEntity<ApiResponse<List<TransactionHistoryResponse>>> viewTransactions(
+            @RequestParam Integer page, @RequestParam Integer size
+    ) {
+        var response = walletService.queryHistory(page, size);
         return new ResponseEntity<>(response, response.getStatus());
     }
 

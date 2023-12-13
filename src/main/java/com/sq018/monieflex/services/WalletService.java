@@ -9,6 +9,7 @@ import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.TransactionHistoryResponse;
 import com.sq018.monieflex.payloads.WalletPayload;
 import com.sq018.monieflex.payloads.flutterwave.VerifyAccountResponse;
 import com.sq018.monieflex.payloads.flutterwave.AllBanksData;
@@ -17,10 +18,13 @@ import com.sq018.monieflex.repositories.WalletRepository;
 import com.sq018.monieflex.services.providers.FlutterwaveService;
 import com.sq018.monieflex.utils.UserUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -97,6 +101,28 @@ public class WalletService {
 
     public ApiResponse<VerifyAccountResponse> verifyBankAccount(FLWVerifyAccountDto accountDto) {
         return flutterwaveService.verifyBankAccount(accountDto);
+    }
+
+    public ApiResponse<List<TransactionHistoryResponse>> queryHistory(Integer page, Integer size) {
+        String email = UserUtil.getLoginUser();
+        Pageable pageable = PageRequest.of(page, size);
+        var transactions = transactionRepository.findByUser_EmailAddress(email, pageable);
+        List<TransactionHistoryResponse> history = new ArrayList<>();
+        transactions.forEach(transaction -> {
+            TransactionHistoryResponse response = new TransactionHistoryResponse();
+            response.setAccount(transaction.getAccount());
+            response.setId(transaction.getId());
+            response.setAmount(transaction.getAmount());
+            response.setStatus(transaction.getStatus());
+            response.setBillType(transaction.getBillType().name());
+            response.setProviderReference(transaction.getProviderReference());
+            response.setTransactionType(transaction.getTransactionType());
+            response.setReceivingBankName(transaction.getReceivingBankName());
+            response.setNarration(transaction.getNarration());
+            response.setCreatedAt(transaction.getCreatedAt());
+            history.add(response);
+        });
+        return new ApiResponse<>(history, "Transaction History successfully fetched");
     }
 
     public ApiResponse<WalletPayload> queryWalletDetails() {
