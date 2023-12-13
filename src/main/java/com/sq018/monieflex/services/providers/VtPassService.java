@@ -5,12 +5,15 @@ import com.sq018.monieflex.dtos.DataSubscriptionDto;
 import com.sq018.monieflex.dtos.VtpassDataSubscriptionDto;
 import com.sq018.monieflex.entities.transactions.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
+import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.vtpass.VtpassDataSubscriptionResponse;
+import com.sq018.monieflex.payloads.vtpass.VtpassDataVariationResponse;
 import com.sq018.monieflex.utils.VtpassEndpoints;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -60,6 +63,18 @@ public class VtPassService {
         result.append(LocalDateTime.now().getMinute());
         result.append(UUID.randomUUID().toString().substring(0, 15));
         return result.toString();
+    }
+
+    public VtpassDataVariationResponse getDataVariations(String code){
+        HttpEntity<Object> entity = new HttpEntity<>(vtPassGetHeader());
+        var response = restTemplate.exchange(
+                VtpassEndpoints.VARIATION_URL(code), HttpMethod.GET, entity, VtpassDataVariationResponse.class
+        );
+        if(response.getStatusCode().is2xxSuccessful()){
+            return response.getBody();
+        } else {
+            throw new MonieFlexException("Request failed");
+        }
     }
 
     @SneakyThrows

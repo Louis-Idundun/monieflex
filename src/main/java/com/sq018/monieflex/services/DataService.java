@@ -30,19 +30,11 @@ public class DataService {
     private final TransactionRepository transactionRepository;
     private final UserUtil userUtil;
     private final VtPassService vtPassService;
-    private final RestTemplate restTemplate;
 
 
-    public VtpassDataVariationResponse getDataVariations(String code){
-        HttpEntity<Object> entity = new HttpEntity<>(vtPassService.vtPassGetHeader());
-        var response = restTemplate.exchange(
-                VtpassEndpoints.VARIATION_URL(code), HttpMethod.GET, entity, VtpassDataVariationResponse.class
-        );
-        if(response.getStatusCode().is2xxSuccessful()){
-            return response.getBody();
-        } else {
-            throw new MonieFlexException("Request failed");
-        }
+    public VtpassDataVariationResponse viewDataVariations(String code){
+        VtpassDataVariationResponse response = vtPassService.getDataVariations(code);
+        return response;
     }
 
 

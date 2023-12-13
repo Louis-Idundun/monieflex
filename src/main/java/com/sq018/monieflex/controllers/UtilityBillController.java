@@ -22,7 +22,7 @@ public class UtilityBillController {
 
     @GetMapping("/data-variations")
     public ResponseEntity<VtpassDataVariationResponse> fetchDataVariation(@RequestParam String code) {
-        var response = dataService.getDataVariations(code);
+        var response = dataService.viewDataVariations(code);
         return new ResponseEntity<>(response, HttpStatus.OK);
 
     }
