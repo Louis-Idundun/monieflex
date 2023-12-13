@@ -1,6 +1,5 @@
 package com.sq018.monieflex.utils;
 
-import org.springframework.beans.factory.annotation.Value;
 
 public class VtpassEndpoints {
     private static String BASE_URL = "https://sandbox.vtpass.com/api";

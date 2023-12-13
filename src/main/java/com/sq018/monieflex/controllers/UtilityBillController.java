@@ -18,7 +18,7 @@ public class UtilityBillController {
 
     @GetMapping("/tv-variations")
     public ResponseEntity<VtpassTVariationResponse> fetchTvVariation(@RequestParam String code) {
-        var response = tvService.getTvVariations(code);
+        var response = tvService.viewTvVariations(code);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
