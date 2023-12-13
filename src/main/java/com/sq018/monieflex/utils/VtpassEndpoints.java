@@ -13,8 +13,5 @@ public class VtpassEndpoints {
         return BASE_URL + "/service-variations?serviceID=%s".formatted(id);
     };
 
-    public static String BUY_AIRTIME = BASE_URL + "/pay";
-}
-
     public static String PAY = BASE_URL + "/pay";
 }

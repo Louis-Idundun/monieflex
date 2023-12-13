@@ -2,7 +2,7 @@ package com.sq018.monieflex.services;
 
 import com.sq018.monieflex.dtos.AirtimeDto;
 import com.sq018.monieflex.entities.transactions.Transaction;
-import com.sq018.monieflex.enums.NetworkType;
+import com.sq018.monieflex.enums.BillType;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.exceptions.MonieFlexException;
@@ -37,7 +37,7 @@ public class AirtimeService {
             transaction.setStatus(TransactionStatus.PENDING);
             transaction.setAmount(BigDecimal.valueOf(airtimeDto.amount()));
             transaction.setAccount(airtimeDto.phoneNumber());
-            transaction.setNetworkType(NetworkType.valueOf(airtimeDto.network()));
+            transaction.setBillType(BillType.valueOf(airtimeDto.network()));
             transaction.setTransactionType(TransactionType.AIRTIME);
             transaction.setUser(user);
             transaction.setReceiverName(airtimeDto.beneficiaryName());

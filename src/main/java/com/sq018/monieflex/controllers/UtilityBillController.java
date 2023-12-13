@@ -1,8 +1,10 @@
 package com.sq018.monieflex.controllers;
 
+import com.sq018.monieflex.dtos.AirtimeDto;
 import com.sq018.monieflex.dtos.DataSubscriptionDto;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.vtpass.VtpassTVariationResponse;
+import com.sq018.monieflex.services.AirtimeService;
 import com.sq018.monieflex.services.DataService;
 import com.sq018.monieflex.services.TvService;
 import lombok.RequiredArgsConstructor;
@@ -10,10 +12,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
+@RestController
+@RequiredArgsConstructor
 public class UtilityBillController {
     private final TvService tvService;
     private final DataService dataService;
+    private final AirtimeService airtimeService;
 
     @GetMapping("/tv-variations")
     public ResponseEntity<VtpassTVariationResponse> fetchTvVariation(@RequestParam String code) {
@@ -26,7 +30,7 @@ public class UtilityBillController {
         var response = dataService.buyData(dataSubscriptionDto);
         return new ResponseEntity<>(response, response.getStatus());
     }
-    private final AirtimeService airtimeService;
+
 
     @PostMapping("/airtime")
     public ResponseEntity<ApiResponse<String>> airtime(@RequestBody AirtimeDto body) {
