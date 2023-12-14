@@ -2,9 +2,11 @@ package com.sq018.monieflex.exceptions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.utils.UserUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolationException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
@@ -15,9 +17,22 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class MonieFlexExceptionHandler extends ResponseEntityExceptionHandler {
+    private final UserUtil userUtil;
+
     @ExceptionHandler(MonieFlexException.class)
     public ApiResponse<String> handleMonieFlexException(MonieFlexException exception){
+        return new ApiResponse<>(
+                exception.getMessage(),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(PaymentException.class)
+    public ApiResponse<String> handlePaymentException(PaymentException exception){
+        userUtil.updateWalletBalance(exception.getAmount(), false);
+        userUtil.updateTransaction(exception.getTransaction());
         return new ApiResponse<>(
                 exception.getMessage(),
                 HttpStatus.BAD_REQUEST

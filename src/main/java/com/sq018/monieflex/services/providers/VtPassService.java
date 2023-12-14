@@ -1,10 +1,9 @@
 package com.sq018.monieflex.services.providers;
 
-
-import com.sq018.monieflex.dtos.DataSubscriptionDto;
-import com.sq018.monieflex.dtos.VtpassDataSubscriptionDto;
+import com.sq018.monieflex.dtos.*;
 import com.sq018.monieflex.entities.transactions.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
+import com.sq018.monieflex.payloads.vtpass.VtPassElectricityResponse;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.vtpass.VtpassDataSubscriptionResponse;
@@ -45,8 +44,6 @@ public class VtPassService {
         this.restTemplate = restTemplate;
     }
 
-
-
     public HttpHeaders vtPassPostHeader() {
         HttpHeaders headers = new HttpHeaders();
         headers.set("api-key", API_KEY);
@@ -62,8 +59,6 @@ public class VtPassService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
     }
-
-
     public String generateRequestId() {
         StringBuilder result = new StringBuilder();
         String date = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE);
@@ -92,6 +87,35 @@ public class VtPassService {
         }
         throw new MonieFlexException("Request failed");
     }
+
+    @SneakyThrows
+    public Transaction electricitySubscription(ElectricityDto electricityDto, Transaction transaction) {
+        VtPassElectricityDto vtElectricity = new VtPassElectricityDto(
+                transaction.getReference(),
+                electricityDto.serviceID(),
+                electricityDto.billersCode(),
+                electricityDto.variationCode().getType(),
+                electricityDto.amount(),
+                electricityDto.phone()
+        );
+        HttpEntity<VtPassElectricityDto> buyBody = new HttpEntity<>(vtElectricity, vtPassPostHeader());
+        var buyResponse = restTemplate.postForEntity(
+                VtpassEndpoints.PAY,
+                buyBody, VtPassElectricityResponse.class);
+        if(Objects.requireNonNull(buyResponse.getBody()).getResponseDescription().toLowerCase().contains("success")) {
+            var reference = buyResponse.getBody().getToken() != null
+                    ? buyResponse.getBody().getToken()
+                    : buyResponse.getBody().getExchangeReference();
+            transaction.setNarration("Electricity Billing");
+            transaction.setReference(buyResponse.getBody().getRequestId());
+            transaction.setProviderReference(reference);
+            transaction.setStatus(TransactionStatus.SUCCESSFUL);
+        } else {
+            transaction.setStatus(TransactionStatus.FAILED);
+        }
+        return transaction;
+    }
+
 
     @SneakyThrows
     public Transaction dataSubscription(DataSubscriptionDto dataSubscriptionDto, Transaction transaction) {
