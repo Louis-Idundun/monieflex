@@ -21,5 +21,5 @@ public class VtpassEndpoints {
 
     public static String VERIFY_NUMBER = BASE_URL + "/merchant-verify";
 
-    public static  String VERIFY_NUMBER = BASE_URL + "/merchant-verify";
+  //  public static  String VERIFY_NUMBER = BASE_URL + "/merchant-verify";
 }

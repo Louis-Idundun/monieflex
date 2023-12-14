@@ -24,16 +24,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 
 import java.util.List;
-import org.springframework.web.bind.annotation.*;
+
 import com.sq018.monieflex.dtos.VtPassVerifySmartCardDto;
 import com.sq018.monieflex.payloads.vtpass.TvSubscriptionQueryContent;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+
 
 @RestController
-@RequestMapping("/bill/")
 @RequestMapping("/bill")
 @RequiredArgsConstructor
 public class UtilityBillController {

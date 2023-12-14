@@ -42,7 +42,7 @@ import java.util.UUID;
 public class VtPassService {
 
 
-    @Value("${monieFlex.vtPass.public-key}")
+  //  @Value("${monieFlex.vtPass.public-key}")
     @Value("${VT_PUBLIC_KEY}")
     private String PUBLIC_KEY;
     @Value("${VT_SECRET_KEY}")
@@ -83,14 +83,7 @@ public class VtPassService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
     }
-    public String generateRequestId() {
-        StringBuilder result = new StringBuilder();
-        String date = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE);
-        result.append(date.replaceAll("-", ""));
-        result.append(LocalDateTime.now().getHour());
-        result.append(LocalDateTime.now().getMinute());
-        result.append(UUID.randomUUID().toString(), 0, 15);
-        return result.toString();
+
 
     @SneakyThrows
     public ApiResponse<TvSubscriptionQueryContent> queryTVAccount(VtPassVerifySmartCardDto body) {
