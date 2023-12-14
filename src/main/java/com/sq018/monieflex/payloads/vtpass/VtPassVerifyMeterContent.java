@@ -17,12 +17,7 @@ import lombok.Setter;
 public class VtPassVerifyMeterContent {
     @JsonProperty("Customer_Name")
     private String customerName;
-    @JsonProperty("Meter_Number")
-    private String billerCode;
-    @JsonProperty("Business_Unit")
-    private String serviceID;
     @JsonProperty("Address")
     private String address;
-    @JsonProperty("Customer_Arrears")
-    private String customerArrears;
+
 }
