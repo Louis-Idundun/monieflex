@@ -1,13 +1,5 @@
 package com.sq018.monieflex.utils;
 
-public class VtpassEndpoints {
-
-    private static String BASE_URL = "https://sandbox.vtpass.com/api";
-
-    /**
-     * ServiceID(Data) = mtn, glo, airtel, nine-mobile
-=======
-
 
 public class VtpassEndpoints {
     private static final String BASE_URL = "https://sandbox.vtpass.com/api";
@@ -15,7 +7,9 @@ public class VtpassEndpoints {
     /**
      * ServiceID(Tv) = gotv, dstv, startimes, showmax
      * ServiceID = gotv, dstv, startimes, showmax
->>>>>>> 84b3ebf0930812096b6c6b64c5a010ba12009be1
+     * ServiceID(Data) = mtn, glo, airtel, nine-mobile
+     * ServiceID = ikeja-electric, eko-electric, kano-electric, portharcourt-electric, jos-electric,
+     * ibadan-electric, kaduna-electric, abuja-electric, enugu-electric, benin-electric, aba-electric
      */
 
     public static String VARIATION_URL(String id) {
@@ -24,4 +18,6 @@ public class VtpassEndpoints {
 
     public static String PAY = BASE_URL + "/pay";
 
+
+    public static String VERIFY_NUMBER = BASE_URL + "/merchant-verify";
 }

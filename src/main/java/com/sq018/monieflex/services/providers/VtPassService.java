@@ -1,8 +1,6 @@
 package com.sq018.monieflex.services.providers;
 
-
-import com.sq018.monieflex.dtos.DataSubscriptionDto;
-import com.sq018.monieflex.dtos.VtpassDataSubscriptionDto;
+import com.sq018.monieflex.dtos.*;
 import com.sq018.monieflex.entities.transactions.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.exceptions.MonieFlexException;
@@ -10,6 +8,9 @@ import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.vtpass.VtpassDataSubscriptionResponse;
 import com.sq018.monieflex.payloads.vtpass.VtpassDataVariation;
 import com.sq018.monieflex.payloads.vtpass.VtpassDataVariationResponse;
+import com.sq018.monieflex.payloads.vtpass.VtPassElectricityResponse;
+import com.sq018.monieflex.payloads.vtpass.VtpassTVariation;
+import com.sq018.monieflex.payloads.vtpass.VtpassTVariationResponse;
 import com.sq018.monieflex.utils.VtpassEndpoints;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.ObjectUtils;
@@ -23,6 +24,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -46,7 +48,7 @@ public class VtPassService {
         this.restTemplate = restTemplate;
     }
 
-    public HttpHeaders vtPassPostHeader(){
+    public HttpHeaders vtPassPostHeader() {
         HttpHeaders headers = new HttpHeaders();
         headers.set("api-key", API_KEY);
         headers.set("secret-key", SECRET_KEY);
@@ -61,8 +63,6 @@ public class VtPassService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
     }
-
-
     public String generateRequestId() {
         StringBuilder result = new StringBuilder();
         String date = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE);
@@ -89,6 +89,54 @@ public class VtPassService {
         }
             throw new MonieFlexException("Request failed");
     }
+
+    public ApiResponse<List<VtpassTVariation>> getTvVariations(String code) {
+        HttpEntity<Object> entity = new HttpEntity<>(vtPassGetHeader());
+        var response = restTemplate.exchange(
+                VtpassEndpoints.VARIATION_URL(code), HttpMethod.GET, entity,
+                VtpassTVariationResponse.class
+        );
+        if(response.getStatusCode().is2xxSuccessful()) {
+            if(Objects.requireNonNull(response.getBody()).getDescription().equalsIgnoreCase("000")) {
+                if(ObjectUtils.isNotEmpty(response.getBody().getContent().getVariations())) {
+                    return new ApiResponse<>(
+                            response.getBody().getContent().getVariations(),
+                            "Request Successfully processed"
+                    );
+                }
+            }
+        }
+        throw new MonieFlexException("Request failed");
+    }
+
+    @SneakyThrows
+    public Transaction electricitySubscription(ElectricityDto electricityDto, Transaction transaction) {
+        VtPassElectricityDto vtElectricity = new VtPassElectricityDto(
+                transaction.getReference(),
+                electricityDto.serviceID(),
+                electricityDto.billersCode(),
+                electricityDto.variationCode().getType(),
+                electricityDto.amount(),
+                electricityDto.phone()
+        );
+        HttpEntity<VtPassElectricityDto> buyBody = new HttpEntity<>(vtElectricity, vtPassPostHeader());
+        var buyResponse = restTemplate.postForEntity(
+                VtpassEndpoints.PAY,
+                buyBody, VtPassElectricityResponse.class);
+        if(Objects.requireNonNull(buyResponse.getBody()).getResponseDescription().toLowerCase().contains("success")) {
+            var reference = buyResponse.getBody().getToken() != null
+                    ? buyResponse.getBody().getToken()
+                    : buyResponse.getBody().getExchangeReference();
+            transaction.setNarration("Electricity Billing");
+            transaction.setReference(buyResponse.getBody().getRequestId());
+            transaction.setProviderReference(reference);
+            transaction.setStatus(TransactionStatus.SUCCESSFUL);
+        } else {
+            transaction.setStatus(TransactionStatus.FAILED);
+        }
+        return transaction;
+    }
+
 
     @SneakyThrows
     public Transaction dataSubscription(DataSubscriptionDto dataSubscriptionDto, Transaction transaction) {

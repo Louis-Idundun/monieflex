@@ -1,5 +1,7 @@
 package com.sq018.monieflex.utils;
 
+import com.sq018.monieflex.entities.transactions.Transaction;
+import com.sq018.monieflex.repositories.TransactionRepository;
 import com.sq018.monieflex.repositories.WalletRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -7,11 +9,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-
 @Service
 @RequiredArgsConstructor
 public class UserUtil {
     private final WalletRepository walletRepository;
+    private final TransactionRepository transactionRepository;
 
     public static String getLoginUser (){
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -41,6 +43,15 @@ public class UserUtil {
                 walletValue.setBalance(walletValue.getBalance().add(amount));
             }
             walletRepository.save(walletValue);
+        }
+    }
+
+    public void updateTransaction(Transaction transaction) {
+        var transact = transactionRepository.findById(transaction.getId());
+        if(transact.isPresent()) {
+            var transactionValue = transact.get();
+            transactionValue.setStatus(transaction.getStatus());
+            transactionRepository.save(transactionValue);
         }
     }
 }
