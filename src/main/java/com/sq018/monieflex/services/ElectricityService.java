@@ -1,11 +1,13 @@
 package com.sq018.monieflex.services;
 
 import com.sq018.monieflex.dtos.ElectricityDto;
+import com.sq018.monieflex.dtos.VtPassVerifyMeterDto;
 import com.sq018.monieflex.entities.transactions.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.vtpass.VtPassVerifyMeterContent;
 import com.sq018.monieflex.repositories.TransactionRepository;
 import com.sq018.monieflex.repositories.UserRepository;
 import com.sq018.monieflex.repositories.WalletRepository;
@@ -19,6 +21,7 @@ import java.math.BigDecimal;
 @Service
 @RequiredArgsConstructor
 public class ElectricityService {
+
     private final VtPassService vtPassService;
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
@@ -58,5 +61,9 @@ public class ElectricityService {
         } else {
             throw new MonieFlexException("Insufficient balance");
         }
+    }
+
+    public ApiResponse<VtPassVerifyMeterContent> queryElectricityAccount(VtPassVerifyMeterDto verifyMeter) {
+        return vtPassService.queryElectricityAccount(verifyMeter);
     }
 }

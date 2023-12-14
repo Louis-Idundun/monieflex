@@ -4,7 +4,9 @@ package com.sq018.monieflex.controllers;
 import com.sq018.monieflex.dtos.ElectricityDto;
 import com.sq018.monieflex.dtos.AirtimeDto;
 import com.sq018.monieflex.dtos.DataSubscriptionDto;
+import com.sq018.monieflex.dtos.VtPassVerifyMeterDto;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.vtpass.VtPassVerifyMeterContent;
 import com.sq018.monieflex.services.ElectricityService;
 import com.sq018.monieflex.payloads.vtpass.VtpassTVariation;
 import com.sq018.monieflex.services.AirtimeService;
@@ -55,6 +57,13 @@ public class UtilityBillController {
     @PostMapping("/airtime")
     public ResponseEntity<ApiResponse<String>> airtime(@RequestBody AirtimeDto body) {
         var response = airtimeService.buyAirtime(body);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+    @PostMapping("/verify-electricity")
+    public ResponseEntity<ApiResponse<VtPassVerifyMeterContent>> queryElectricityAccount(
+            @RequestBody VtPassVerifyMeterDto verifyMeter) {
+        var response = electricityService.queryElectricityAccount(verifyMeter);
         return new ResponseEntity<>(response, response.getStatus());
     }
 }
