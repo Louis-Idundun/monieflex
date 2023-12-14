@@ -33,6 +33,9 @@ public class User extends BaseEntity implements UserDetails {
     @NotEmpty(message = "Password should not be empty")
     private String encryptedPassword;
 
+    @Column(name = "password_recovery")
+    private Boolean passwordRecovery = false;
+
     @Column(name = "transaction_pin")
     @Min(value = 4, message = "Pin should not be less than 4 digits")
     private String transactionPin;
