@@ -1,27 +1,39 @@
 package com.sq018.monieflex.services;
 
+
+import com.sq018.monieflex.exceptions.MonieFlexException;
+import com.sq018.monieflex.payloads.vtpass.VtpassDataVariation;
+import com.sq018.monieflex.services.providers.VtPassService;
+import lombok.RequiredArgsConstructor;
 import com.sq018.monieflex.dtos.DataSubscriptionDto;
 import com.sq018.monieflex.entities.transactions.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.enums.TransactionType;
-import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.repositories.TransactionRepository;
 import com.sq018.monieflex.repositories.UserRepository;
-import com.sq018.monieflex.services.providers.VtPassService;
 import com.sq018.monieflex.utils.UserUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class DataService {
+
+
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
     private final UserUtil userUtil;
     private final VtPassService vtPassService;
+
+
+    public ApiResponse<List<VtpassDataVariation>> viewDataVariations(String code){
+
+        return vtPassService.getDataVariations(code);
+    }
+
 
     public ApiResponse<String> buyData(DataSubscriptionDto dataSubscriptionDto) {
         String email = UserUtil.getLoginUser();
