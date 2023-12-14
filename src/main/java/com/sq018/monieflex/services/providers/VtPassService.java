@@ -3,6 +3,7 @@ package com.sq018.monieflex.services.providers;
 import com.sq018.monieflex.dtos.*;
 import com.sq018.monieflex.entities.transactions.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
+import com.sq018.monieflex.payloads.vtpass.*;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.vtpass.VtpassDataSubscriptionResponse;
@@ -17,7 +18,6 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
 import com.sq018.monieflex.dtos.AirtimeDto;
 import com.sq018.monieflex.dtos.VtPassAirtimeDto;
-import com.sq018.monieflex.payloads.vtpass.VtPassAirtimeResponse;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -190,5 +190,23 @@ public class VtPassService {
             transaction.setStatus(TransactionStatus.FAILED);
         }
         return transaction;
+    }
+
+    @SneakyThrows
+    public ApiResponse<VtPassVerifyMeterContent> queryElectricityAccount(VtPassVerifyMeterDto verifyMeter) {
+        HttpEntity<VtPassVerifyMeterDto> verifyBody = new HttpEntity<>(verifyMeter, vtPassPostHeader());
+        var response = restTemplate.postForObject(
+                VtpassEndpoints.VERIFY_NUMBER,
+                verifyBody, VtPassVerifyMeterResponse.class
+        );
+        if(Objects.requireNonNull(response).getCode().equalsIgnoreCase("000")) {
+            if(ObjectUtils.isNotEmpty(response.getContent())) {
+                return new ApiResponse<>(
+                        response.getContent(),
+                        "Successful"
+                );
+            }
+        }
+        throw new MonieFlexException("Request failed");
     }
 }
