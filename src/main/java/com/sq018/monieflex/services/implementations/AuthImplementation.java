@@ -12,6 +12,7 @@ import com.sq018.monieflex.repositories.UserRepository;
 import com.sq018.monieflex.repositories.WalletRepository;
 import com.sq018.monieflex.services.AuthService;
 import com.sq018.monieflex.services.WalletService;
+import com.sq018.monieflex.utils.ForgotPasswordEmailTemplate;
 import com.sq018.monieflex.utils.SignupEmailTemplate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -158,6 +159,62 @@ public class AuthImplementation implements AuthService {
             }
         } else {
             throw new MonieFlexException("User does not exist");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<String>> checkEmailForPasswordReset(String emailAddress) {
+        var user = userRepository.findByEmailAddress(emailAddress);
+        if (user.isPresent()) {
+            emailImplementation.sendEmail(
+                    ForgotPasswordEmailTemplate.password(
+                            user.get().getFirstName(),
+                            generateToken(user.get(),expire)
+                    ),
+                    "Password Reset - Verify your email address",
+                    user.get().getEmailAddress()
+            );
+            user.get().setPasswordRecovery(true);
+            userRepository.save(user.get());
+            ApiResponse<String> response = new ApiResponse<>(
+                    "Check your email for the password reset link",
+                    "Success"
+            );
+            return new ResponseEntity<>(response, response.getStatus());
+        } else {
+            throw new MonieFlexException("Email not found");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<String>> resetPassword(
+            String token, String password, String confirmPassword
+    ) {
+        String email = jwtImplementation.extractEmailAddressFromToken(token);
+        if(email != null) {
+            if(jwtImplementation.isExpired(token)) {
+                throw new MonieFlexException("Link has expired. Please request for a new link.");
+            } else {
+                var user = userRepository.findByEmailAddress(email);
+                if(user.isPresent() && user.get().getPasswordRecovery()) {
+                    if(password.equals(confirmPassword)) {
+                        user.get().setEncryptedPassword(passwordEncoder.encode(password));
+                        user.get().setPasswordRecovery(false);
+                        userRepository.save(user.get());
+                        ApiResponse<String> response = new ApiResponse<>(
+                                "Password changed for %s".formatted(user.get().getEmailAddress()),
+                                "Successfully changed password"
+                        );
+                        return new ResponseEntity<>(response, response.getStatus());
+                    } else {
+                        throw new MonieFlexException("Password does not match");
+                    }
+                } else {
+                    throw new MonieFlexException("User not found");
+                }
+            }
+        } else {
+            throw new MonieFlexException("Link is not properly formatted.");
         }
     }
 }

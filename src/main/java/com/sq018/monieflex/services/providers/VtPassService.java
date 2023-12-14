@@ -6,15 +6,21 @@ import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.payloads.vtpass.*;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.vtpass.VtpassDataSubscriptionResponse;
+import com.sq018.monieflex.payloads.vtpass.VtpassDataVariation;
+import com.sq018.monieflex.payloads.vtpass.VtpassDataVariationResponse;
+import com.sq018.monieflex.payloads.vtpass.VtPassElectricityResponse;
+import com.sq018.monieflex.payloads.vtpass.VtpassTVariation;
+import com.sq018.monieflex.payloads.vtpass.VtpassTVariationResponse;
 import com.sq018.monieflex.utils.VtpassEndpoints;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
 import com.sq018.monieflex.dtos.AirtimeDto;
 import com.sq018.monieflex.dtos.VtPassAirtimeDto;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -27,6 +33,8 @@ import java.util.UUID;
 
 @Service
 public class VtPassService {
+
+
     @Value("${monieFlex.vtPass.public-key}")
     private String PUBLIC_KEY;
     @Value("${monieFlex.vtPass.secret-key}")
@@ -48,7 +56,7 @@ public class VtPassService {
         return headers;
     }
 
-    public HttpHeaders vtPassGetHeader() {
+    public HttpHeaders vtPassGetHeader(){
         HttpHeaders headers = new HttpHeaders();
         headers.set("api-key", API_KEY);
         headers.set("public-key", PUBLIC_KEY);
@@ -63,6 +71,23 @@ public class VtPassService {
         result.append(LocalDateTime.now().getMinute());
         result.append(UUID.randomUUID().toString(), 0, 15);
         return result.toString();
+    }
+
+    public ApiResponse<List<VtpassDataVariation>> getDataVariations(String code){
+        HttpEntity<Object> entity = new HttpEntity<>(vtPassGetHeader());
+        var response = restTemplate.exchange(
+                VtpassEndpoints.VARIATION_URL(code), HttpMethod.GET, entity, VtpassDataVariationResponse.class
+        );
+        if(response.getStatusCode().is2xxSuccessful()){
+            if(Objects.requireNonNull(response.getBody()).getDescription().equalsIgnoreCase("000")){
+                if(ObjectUtils.isNotEmpty(response.getBody().getContent().getVariations())){
+                    return new ApiResponse<>(
+                            response.getBody().getContent().getVariations(),
+                            "Request successfully processed");
+                }
+            }
+        }
+            throw new MonieFlexException("Request failed");
     }
 
     public ApiResponse<List<VtpassTVariation>> getTvVariations(String code) {
