@@ -12,4 +12,6 @@ public interface AuthService {
     ResponseEntity<ApiResponse<String>> signup(SignupDto signupDto);
     String confirmEmail(String token);
     ResponseEntity<ApiResponse<String>> resendLink(String email, VerifyType type);
+    ResponseEntity<ApiResponse<String>> checkEmailForPasswordReset(String emailAddress);
+    ResponseEntity<ApiResponse<String>> resetPassword(String token, String password, String confirmPassword);
 }
