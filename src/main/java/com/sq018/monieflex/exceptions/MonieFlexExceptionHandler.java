@@ -3,10 +3,12 @@ package com.sq018.monieflex.exceptions;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.utils.UserUtil;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -79,6 +81,22 @@ public class MonieFlexExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ApiResponse<String> handleConstraintViolationException(ConstraintViolationException exception){
+        return new ApiResponse<>(
+                exception.getMessage(),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ApiResponse<String> handleBadCredentialsException(){
+        return new ApiResponse<>(
+                "Incorrect user details",
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ApiResponse<String> handleExpiredJwtException(ExpiredJwtException exception){
         return new ApiResponse<>(
                 exception.getMessage(),
                 HttpStatus.BAD_REQUEST
