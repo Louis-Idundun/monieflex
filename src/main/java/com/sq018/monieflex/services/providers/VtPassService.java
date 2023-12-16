@@ -209,4 +209,36 @@ public class VtPassService {
         }
         throw new MonieFlexException("Request failed");
     }
+
+    @SneakyThrows
+    public Transaction tvSubscription(TvSubsDto tvSubsDto, Transaction transaction ){
+        VtpassTvSubscriptionDto vtpassTv = new VtpassTvSubscriptionDto(
+                transaction.getReference(),
+                tvSubsDto.serviceId(),
+                tvSubsDto.billersCode(),
+                tvSubsDto.variationCode(),
+                tvSubsDto.amount(),
+                tvSubsDto.phone(),
+                tvSubsDto.subscriptionType().name()
+        );
+        HttpEntity<VtpassTvSubscriptionDto> buyBody = new HttpEntity<>(vtpassTv,vtPassPostHeader());
+        var response = restTemplate.postForEntity(VtpassEndpoints.PAY, buyBody, VtpassTVariationResponse.class);
+
+        System.out.println("::::::: " + response);
+        System.out.println(response.getBody());
+        if(Objects.requireNonNull(response.getBody()).getDescription().toLowerCase().contains("success")){
+            var reference = response.getBody().getToken() != null
+                    ? response.getBody().getToken()
+                    : response.getBody().getExchangeReference();
+            transaction.setNarration("Cable Tv Bill");
+            transaction.setNarration(response.getBody().getRequestId());
+            transaction.setProviderReference(reference);
+            transaction.setStatus(TransactionStatus.SUCCESSFUL);
+
+        }else {
+            transaction.setStatus(TransactionStatus.FAILED);
+        }
+        return transaction;
+
+    }
 }
