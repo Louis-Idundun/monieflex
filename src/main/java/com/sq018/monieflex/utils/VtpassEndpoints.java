@@ -2,7 +2,7 @@ package com.sq018.monieflex.utils;
 
 
 public class VtpassEndpoints {
-    private static String BASE_URL = "https://sandbox.vtpass.com/api";
+    private static final String BASE_URL = "https://sandbox.vtpass.com/api";
 
     /**
      * ServiceID(Tv) = gotv, dstv, startimes, showmax

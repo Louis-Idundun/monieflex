@@ -70,8 +70,6 @@ public class VtPassService {
         HttpHeaders headers = new HttpHeaders();
         headers.set("api-key", API_KEY);
         headers.set("secret-key", SECRET_KEY);
-        headers.set("api_key", API_KEY);
-        headers.set("secret_key", SECRET_KEY);
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
     }
