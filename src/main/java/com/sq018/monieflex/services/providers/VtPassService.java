@@ -224,8 +224,6 @@ public class VtPassService {
         HttpEntity<VtpassTvSubscriptionDto> buyBody = new HttpEntity<>(vtpassTv,vtPassPostHeader());
         var response = restTemplate.postForEntity(VtpassEndpoints.PAY, buyBody, VtpassTVariationResponse.class);
 
-        System.out.println("::::::: " + response);
-        System.out.println(response.getBody());
         if(Objects.requireNonNull(response.getBody()).getDescription().toLowerCase().contains("success")){
             var reference = response.getBody().getToken() != null
                     ? response.getBody().getToken()
