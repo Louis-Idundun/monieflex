@@ -8,6 +8,7 @@ public class MonieFlexApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(MonieFlexApplication.class, args);
+
     }
 
 }

@@ -25,8 +25,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
+import com.sq018.monieflex.dtos.VtPassVerifySmartCardDto;
+import com.sq018.monieflex.payloads.vtpass.TvSubscriptionQueryContent;
+
+
 @RestController
-@RequestMapping("/bill/")
+@RequestMapping("/bill")
 @RequiredArgsConstructor
 public class UtilityBillController {
     private final ElectricityService electricityService;
@@ -62,7 +66,6 @@ public class UtilityBillController {
         return new ResponseEntity<>(response, response.getStatus());
     }
 
-
     @PostMapping("/airtime")
     public ResponseEntity<ApiResponse<String>> airtime(@RequestBody AirtimeDto body) {
         var response = airtimeService.buyAirtime(body);
@@ -73,6 +76,14 @@ public class UtilityBillController {
     public ResponseEntity<ApiResponse<VtPassVerifyMeterContent>> queryElectricityAccount(
             @RequestBody VtPassVerifyMeterDto verifyMeter) {
         var response = electricityService.queryElectricityAccount(verifyMeter);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+    @PostMapping("/verify-smart-card")
+    public ResponseEntity<ApiResponse<TvSubscriptionQueryContent>> queryTvAccount(
+            @RequestBody VtPassVerifySmartCardDto smartCard
+    ) {
+        var response = tvService.queryTvAccount(smartCard);
         return new ResponseEntity<>(response, response.getStatus());
     }
 }
