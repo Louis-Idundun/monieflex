@@ -50,7 +50,7 @@ public class MonieFlexExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(LockedException.class)
     public ApiResponse<String> handleLockedException(LockedException exception){
         return new ApiResponse<>(
-                exception.getMessage(),
+                "Email is not verified. Check your email for verification link",
                 HttpStatus.BAD_REQUEST
         );
     }
@@ -98,7 +98,7 @@ public class MonieFlexExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ExpiredJwtException.class)
     public ApiResponse<String> handleExpiredJwtException(ExpiredJwtException exception){
         return new ApiResponse<>(
-                exception.getMessage(),
+                "Token is expired. Try login or request for another",
                 HttpStatus.BAD_REQUEST
         );
     }

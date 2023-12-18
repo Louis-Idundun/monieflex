@@ -35,7 +35,7 @@ public class TransactionHistoryResponse {
         @JsonProperty("provider_reference")
         private String providerReference = null;
         @JsonProperty("bill_type")
-        private String billType = null;
+        private BillType billType = null;
         @JsonProperty("narration")
         private String narration = null;
         @JsonProperty("created_at")

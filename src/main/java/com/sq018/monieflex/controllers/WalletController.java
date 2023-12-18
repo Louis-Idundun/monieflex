@@ -4,6 +4,7 @@ import com.sq018.monieflex.dtos.FLWVerifyAccountDto;
 import com.sq018.monieflex.dtos.LocalAccountQueryRequest;
 import com.sq018.monieflex.dtos.LocalTransferRequest;
 import com.sq018.monieflex.dtos.TransferDto;
+import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.TransactionHistoryResponse;
 import com.sq018.monieflex.payloads.WalletPayload;
@@ -50,6 +51,14 @@ public class WalletController {
             @RequestParam Integer page, @RequestParam Integer size
     ) {
         var response = walletService.queryHistory(page, size);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<ApiResponse<List<TransactionHistoryResponse>>> viewHistory(
+            @RequestParam Integer page, @RequestParam Integer size, @RequestParam TransactionType type
+            ) {
+        var response = walletService.queryHistory(page, size, type);
         return new ResponseEntity<>(response, response.getStatus());
     }
 
