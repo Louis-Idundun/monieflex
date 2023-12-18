@@ -166,7 +166,29 @@ public class WalletService {
             response.setId(transaction.getId());
             response.setAmount(transaction.getAmount());
             response.setStatus(transaction.getStatus());
-            response.setBillType(transaction.getBillType().name());
+            response.setBillType(transaction.getBillType());
+            response.setProviderReference(transaction.getProviderReference());
+            response.setTransactionType(transaction.getTransactionType());
+            response.setReceivingBankName(transaction.getReceivingBankName());
+            response.setNarration(transaction.getNarration());
+            response.setCreatedAt(transaction.getCreatedAt());
+            history.add(response);
+        });
+        return new ApiResponse<>(history, "Transaction History successfully fetched");
+    }
+
+    public ApiResponse<List<TransactionHistoryResponse>> queryHistory(Integer page, Integer size, TransactionType type) {
+        String email = UserUtil.getLoginUser();
+        Pageable pageable = PageRequest.of(page, size);
+        var transactions = transactionRepository.findByTransactionTypeAndUser_EmailAddress(type, email, pageable);
+        List<TransactionHistoryResponse> history = new ArrayList<>();
+        transactions.forEach(transaction -> {
+            TransactionHistoryResponse response = new TransactionHistoryResponse();
+            response.setAccount(transaction.getAccount());
+            response.setId(transaction.getId());
+            response.setAmount(transaction.getAmount());
+            response.setStatus(transaction.getStatus());
+            response.setBillType(transaction.getBillType());
             response.setProviderReference(transaction.getProviderReference());
             response.setTransactionType(transaction.getTransactionType());
             response.setReceivingBankName(transaction.getReceivingBankName());
