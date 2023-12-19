@@ -9,9 +9,9 @@ import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.LoginResponse;
 import com.sq018.monieflex.services.AuthService;
 import com.sq018.monieflex.services.implementations.AuthImplementation;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,7 +30,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<String>> signup(@RequestBody SignupDto signup) {
+    public ResponseEntity<ApiResponse<String>> signup(@RequestBody @Validated SignupDto signup) {
         return authService.signup(signup);
     }
 
