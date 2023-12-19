@@ -33,7 +33,7 @@ public class ElectricityService {
             userUtil.updateWalletBalance(BigDecimal.valueOf(electricityDto.amount()), true);
             Transaction transaction = new Transaction();
             transaction.setStatus(TransactionStatus.PENDING);
-            transaction.setNarration("Electricity Billing");
+            transaction.setNarration(electricityDto.narration());
             transaction.setAccount(electricityDto.billersCode());
             transaction.setUser(user);
             transaction.setReference(vtPassService.generateRequestId());

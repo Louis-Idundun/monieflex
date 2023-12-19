@@ -96,7 +96,9 @@ public class VtPassService {
                 electricityDto.billersCode(),
                 electricityDto.variationCode().getType(),
                 electricityDto.amount(),
-                electricityDto.phone()
+                electricityDto.phone(),
+                electricityDto.narration()
+
         );
         HttpEntity<VtPassElectricityDto> buyBody = new HttpEntity<>(vtElectricity, vtPassPostHeader());
         var buyResponse = restTemplate.postForEntity(
@@ -106,7 +108,7 @@ public class VtPassService {
             var reference = buyResponse.getBody().getToken() != null
                     ? buyResponse.getBody().getToken()
                     : buyResponse.getBody().getExchangeReference();
-            transaction.setNarration("Electricity Billing");
+            transaction.setNarration(electricityDto.narration());
             transaction.setReference(buyResponse.getBody().getRequestId());
             transaction.setProviderReference(reference);
             transaction.setStatus(TransactionStatus.SUCCESSFUL);
