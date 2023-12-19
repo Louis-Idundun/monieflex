@@ -1,7 +1,10 @@
 package com.sq018.monieflex.controllers;
 
 import com.sq018.monieflex.dtos.FLWVerifyAccountDto;
+import com.sq018.monieflex.dtos.LocalAccountQueryRequest;
+import com.sq018.monieflex.dtos.LocalTransferRequest;
 import com.sq018.monieflex.dtos.TransferDto;
+import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.TransactionHistoryResponse;
 import com.sq018.monieflex.payloads.WalletPayload;
@@ -51,9 +54,29 @@ public class WalletController {
         return new ResponseEntity<>(response, response.getStatus());
     }
 
+    @GetMapping("/history")
+    public ResponseEntity<ApiResponse<List<TransactionHistoryResponse>>> viewHistory(
+            @RequestParam Integer page, @RequestParam Integer size, @RequestParam TransactionType type
+            ) {
+        var response = walletService.queryHistory(page, size, type);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
     @GetMapping("/details")
     public ResponseEntity<ApiResponse<WalletPayload>> fetchWalletDetails() {
         var response = walletService.queryWalletDetails();
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+    @PostMapping("/local/transfer")
+    public ResponseEntity<ApiResponse<?>> localTransfer(@RequestBody LocalTransferRequest localTransferRequest){
+        ApiResponse<?> response = walletService.localTransfer(localTransferRequest);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+    @PostMapping("/verify/local/account")
+    public ResponseEntity<ApiResponse<?>> localAccountQuery(@RequestBody LocalAccountQueryRequest localAccountQueryRequest){
+        ApiResponse<?> response = walletService.queryLocalAccount(localAccountQueryRequest);
         return new ResponseEntity<>(response, response.getStatus());
     }
 }
