@@ -36,7 +36,7 @@ public class VtPassService {
     private String PUBLIC_KEY;
     @Value("${monieFlex.vtPass.secret-key}")
     private String SECRET_KEY;
-    @Value("${moniFlex.vtPass.api-key}")
+    @Value("${VT_API_KEY}")
     private String API_KEY;
 
     private final RestTemplate restTemplate;
