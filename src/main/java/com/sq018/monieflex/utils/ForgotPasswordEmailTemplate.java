@@ -4,8 +4,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 public class ForgotPasswordEmailTemplate {
         public static String password(String firstName, String token) {
-            String homeURL = ServletUriComponentsBuilder.fromCurrentContextPath().toUriString();
-            String link = homeURL + "/auth/verify-email-address?token=" + token;
+            String link = "http://localhost:3000/auth/reset-password?token=" + token;
             return "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional //EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
                     "<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\">\n" +
                     "<head>\n" +
