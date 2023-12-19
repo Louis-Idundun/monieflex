@@ -31,11 +31,11 @@ import java.util.UUID;
 
 @Service
 public class VtPassService {
-    @Value("${monieFlex.vtPass.public-key}")
+    @Value("${VT_PUBLIC_KEY}")
     private String PUBLIC_KEY;
-    @Value("${monieFlex.vtPass.secret-key}")
+    @Value("${VT_SECRET_KEY}")
     private String SECRET_KEY;
-    @Value("${moniFlex.vtPass.api-key}")
+    @Value("${VT_API_KEY}")
     private String API_KEY;
 
     private final RestTemplate restTemplate;
