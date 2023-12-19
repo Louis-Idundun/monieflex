@@ -8,21 +8,9 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class VtpassTVariationResponse {
+public class VtpassDataVariationResponse {
     @JsonProperty("response_description")
     private String description;
     @JsonProperty("content")
-    private VtpassTVariationContent content;
-
-    @JsonProperty("response_Id")
-    private String requestId;
-
-    private String amount;
-
-    @JsonProperty("purchased_code")
-    private String purchasedCode;
-
-    private String exchangeReference;
-
-    private String token;
+    private VtpassDataVariationContent content;
 }

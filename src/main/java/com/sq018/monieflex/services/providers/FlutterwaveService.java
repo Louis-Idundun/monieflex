@@ -140,26 +140,27 @@ public class FlutterwaveService {
         return transaction;
     }
 
-    @SneakyThrows
     public ApiResponse<VerifyAccountResponse> verifyBankAccount(FLWVerifyAccountDto verifyAccountDto) {
         HttpEntity<FLWVerifyAccountDto> entity = new HttpEntity<>(verifyAccountDto, getFlutterwaveHeader());
-        var request = rest.postForEntity(
-                FlutterwaveEndpoints.VERIFY_BANK_ACCOUNT,
-                entity, FLWVerifyAccountResponse.class
-        );
-        if(request.getStatusCode().is2xxSuccessful()) {
-            FLWVerifyAccountResponse body = request.getBody();
-            if(Objects.requireNonNull(body).getStatus().equalsIgnoreCase("success")) {
-                VerifyAccountResponse data = body.getData();
-                if(ObjectUtils.isNotEmpty(data)) {
-                    return new ApiResponse<>(
-                            data,
-                            "Request successfully processed"
-                    );
+        try {
+            var request = rest.postForEntity(
+                    FlutterwaveEndpoints.VERIFY_BANK_ACCOUNT,
+                    entity, FLWVerifyAccountResponse.class
+            );
+            if(request.getStatusCode().is2xxSuccessful()) {
+                FLWVerifyAccountResponse body = request.getBody();
+                if(Objects.requireNonNull(body).getStatus().equalsIgnoreCase("success")) {
+                    VerifyAccountResponse data = body.getData();
+                    if(ObjectUtils.isNotEmpty(data)) {
+                        return new ApiResponse<>(
+                                data,
+                                "Request successfully processed"
+                        );
+                    }
                 }
             }
             throw new MonieFlexException("Error in processing request");
-        } else {
+        } catch (Exception e) {
             throw new MonieFlexException("Invalid Account. Please check your details");
         }
     }

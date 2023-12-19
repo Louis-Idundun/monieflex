@@ -14,10 +14,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class VtPassVerifyMeterContent {
+public class TvSubscriptionQueryContent {
     @JsonProperty("Customer_Name")
     private String customerName;
-    @JsonProperty("Address")
-    private String address;
-
+    @JsonProperty("Customer_Number")
+    private String cardNumber;
 }

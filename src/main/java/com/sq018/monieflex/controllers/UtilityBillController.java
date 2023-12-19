@@ -4,7 +4,10 @@ package com.sq018.monieflex.controllers;
 import com.sq018.monieflex.dtos.ElectricityDto;
 import com.sq018.monieflex.dtos.AirtimeDto;
 import com.sq018.monieflex.dtos.DataSubscriptionDto;
+import com.sq018.monieflex.dtos.VtPassVerifyMeterDto;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.vtpass.VtPassVerifyMeterContent;
+import com.sq018.monieflex.payloads.vtpass.VtpassDataVariation;
 import com.sq018.monieflex.services.ElectricityService;
 import com.sq018.monieflex.payloads.vtpass.VtpassTVariation;
 import com.sq018.monieflex.services.AirtimeService;
@@ -22,8 +25,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
+import com.sq018.monieflex.dtos.VtPassVerifySmartCardDto;
+import com.sq018.monieflex.payloads.vtpass.TvSubscriptionQueryContent;
+
+
 @RestController
-@RequestMapping("/bill/")
+@RequestMapping("/bill")
 @RequiredArgsConstructor
 public class UtilityBillController {
     private final ElectricityService electricityService;
@@ -36,6 +43,14 @@ public class UtilityBillController {
     public ResponseEntity<ApiResponse<String>> buyElectricity(@RequestBody ElectricityDto dto) {
         var response = electricityService.buyElectricity(dto);
         return new ResponseEntity<>(response, response.getStatus());
+    }
+
+
+    @GetMapping("/data-variations")
+    public ResponseEntity<ApiResponse<List<VtpassDataVariation>>> fetchDataVariation(@RequestParam String code) {
+        var response = dataService.viewDataVariations(code);
+        return new ResponseEntity<>(response, response.getStatus());
+
     }
 
      @GetMapping("/tv-variations")
@@ -51,10 +66,24 @@ public class UtilityBillController {
         return new ResponseEntity<>(response, response.getStatus());
     }
 
-
     @PostMapping("/airtime")
     public ResponseEntity<ApiResponse<String>> airtime(@RequestBody AirtimeDto body) {
         var response = airtimeService.buyAirtime(body);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+    @PostMapping("/verify-electricity")
+    public ResponseEntity<ApiResponse<VtPassVerifyMeterContent>> queryElectricityAccount(
+            @RequestBody VtPassVerifyMeterDto verifyMeter) {
+        var response = electricityService.queryElectricityAccount(verifyMeter);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+    @PostMapping("/verify-smart-card")
+    public ResponseEntity<ApiResponse<TvSubscriptionQueryContent>> queryTvAccount(
+            @RequestBody VtPassVerifySmartCardDto smartCard
+    ) {
+        var response = tvService.queryTvAccount(smartCard);
         return new ResponseEntity<>(response, response.getStatus());
     }
 }
