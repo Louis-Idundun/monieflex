@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.utils.UserUtil;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +51,7 @@ public class MonieFlexExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(LockedException.class)
     public ApiResponse<String> handleLockedException(LockedException exception){
         return new ApiResponse<>(
-                exception.getMessage(),
+                "Email is not verified. Check your email for verification link",
                 HttpStatus.BAD_REQUEST
         );
     }
@@ -98,7 +99,15 @@ public class MonieFlexExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ExpiredJwtException.class)
     public ApiResponse<String> handleExpiredJwtException(ExpiredJwtException exception){
         return new ApiResponse<>(
-                exception.getMessage(),
+                "Token is expired. Try login or request for another",
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(MalformedJwtException.class)
+    public ApiResponse<String> handleMalformedJwtException(MalformedJwtException exception){
+        return new ApiResponse<>(
+                "Incorrect token",
                 HttpStatus.BAD_REQUEST
         );
     }

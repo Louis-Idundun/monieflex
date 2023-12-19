@@ -14,10 +14,12 @@ public class VtpassEndpoints {
 
     public static String VARIATION_URL(String id) {
         return BASE_URL + "/service-variations?serviceID=%s".formatted(id);
-    }
+    };
 
     public static String PAY = BASE_URL + "/pay";
 
 
     public static String VERIFY_NUMBER = BASE_URL + "/merchant-verify";
+
+  //  public static  String VERIFY_NUMBER = BASE_URL + "/merchant-verify";
 }

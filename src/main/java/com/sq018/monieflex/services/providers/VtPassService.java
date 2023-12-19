@@ -18,6 +18,13 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
 import com.sq018.monieflex.dtos.AirtimeDto;
 import com.sq018.monieflex.dtos.VtPassAirtimeDto;
+import com.sq018.monieflex.payloads.vtpass.VtPassAirtimeResponse;
+import com.sq018.monieflex.dtos.VtPassVerifySmartCardDto;
+import com.sq018.monieflex.exceptions.MonieFlexException;
+import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.vtpass.TvSubscriptionQueryContent;
+import com.sq018.monieflex.payloads.vtpass.VtPassTvSubscriptionQueryResponse;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -35,17 +42,28 @@ import java.util.UUID;
 public class VtPassService {
 
 
-    @Value("${monieFlex.vtPass.public-key}")
+  //  @Value("${monieFlex.vtPass.public-key}")
+    @Value("${VT_PUBLIC_KEY}")
     private String PUBLIC_KEY;
-    @Value("${monieFlex.vtPass.secret-key}")
+    @Value("${VT_SECRET_KEY}")
     private String SECRET_KEY;
-    @Value("${moniFlex.vtPass.api-key}")
+    @Value("${VT_API_KEY}")
     private String API_KEY;
 
     private final RestTemplate restTemplate;
 
     public VtPassService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
+    }
+
+    public String generateRequestId() {
+        StringBuilder result = new StringBuilder();
+        String date = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE);
+        result.append(date.replaceAll("-", ""));
+        result.append(LocalDateTime.now().getHour());
+        result.append(LocalDateTime.now().getMinute());
+        result.append(UUID.randomUUID().toString(), 0, 15);
+        return result.toString();
     }
 
     public HttpHeaders vtPassPostHeader() {
@@ -58,19 +76,29 @@ public class VtPassService {
 
     public HttpHeaders vtPassGetHeader(){
         HttpHeaders headers = new HttpHeaders();
-        headers.set("api-key", API_KEY);
-        headers.set("public-key", PUBLIC_KEY);
+        headers.set("api_key", API_KEY);
+        headers.set("secret_key", PUBLIC_KEY);
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
     }
-    public String generateRequestId() {
-        StringBuilder result = new StringBuilder();
-        String date = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE);
-        result.append(date.replaceAll("-", ""));
-        result.append(LocalDateTime.now().getHour());
-        result.append(LocalDateTime.now().getMinute());
-        result.append(UUID.randomUUID().toString(), 0, 15);
-        return result.toString();
+
+
+    @SneakyThrows
+    public ApiResponse<TvSubscriptionQueryContent> queryTVAccount(VtPassVerifySmartCardDto body) {
+        HttpEntity<VtPassVerifySmartCardDto> verifyBody = new HttpEntity<>(body, vtPassPostHeader());
+        var response = restTemplate.postForObject(
+                VtpassEndpoints.VERIFY_NUMBER,
+                verifyBody, VtPassTvSubscriptionQueryResponse.class
+        );
+        if(Objects.requireNonNull(response).getStatusCode().equalsIgnoreCase("000")) {
+            if(ObjectUtils.isNotEmpty(response.getContent())) {
+                return new ApiResponse<>(
+                        response.getContent(),
+                        "Successful"
+                );
+            }
+        }
+        throw new MonieFlexException("Request failed");
     }
 
     public ApiResponse<List<VtpassDataVariation>> getDataVariations(String code){

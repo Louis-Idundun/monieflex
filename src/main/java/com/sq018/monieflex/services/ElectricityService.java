@@ -62,7 +62,6 @@ public class ElectricityService {
             throw new MonieFlexException("Insufficient balance");
         }
     }
-
     public ApiResponse<VtPassVerifyMeterContent> queryElectricityAccount(VtPassVerifyMeterDto verifyMeter) {
         return vtPassService.queryElectricityAccount(verifyMeter);
     }

@@ -1,13 +1,13 @@
 package com.sq018.monieflex.services;
 
-
+import com.sq018.monieflex.dtos.VtPassVerifySmartCardDto;
 import com.sq018.monieflex.dtos.TvSubsDto;
 import com.sq018.monieflex.entities.transactions.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.exceptions.MonieFlexException;
-import com.sq018.monieflex.payloads.vtpass.VtpassTVariationResponse;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.vtpass.TvSubscriptionQueryContent;
 import com.sq018.monieflex.payloads.vtpass.VtpassTVariation;
 import com.sq018.monieflex.repositories.TransactionRepository;
 import com.sq018.monieflex.repositories.UserRepository;
@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 
-
 @Service
 @RequiredArgsConstructor
 public class TvService {
@@ -28,12 +27,15 @@ public class TvService {
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
 
-        public ApiResponse<List<VtpassTVariation>> viewTvVariations (String code){
-            return vtPassService.getTvVariations(code);
-        }
+    public ApiResponse<List<VtpassTVariation>> viewTvVariations(String code) {
+        return vtPassService.getTvVariations(code);
+    }
+
+    public ApiResponse<TvSubscriptionQueryContent> queryTvAccount(VtPassVerifySmartCardDto smartCard) {
+        return vtPassService.queryTVAccount(smartCard);
+    }
 
     public ApiResponse<String> payTvSubscription(TvSubsDto tvSubsDto) {
-
         String email = UserUtil.getLoginUser();
         var user = userRepository.findByEmailAddress(email).orElseThrow(
                 () -> new MonieFlexException("User not found")
@@ -66,9 +68,5 @@ public class TvService {
         } else {
             throw new MonieFlexException("Insufficient balance");
         }
-
     }
-
-
-    }
-
+}

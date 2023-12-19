@@ -33,7 +33,6 @@ public class SecurityFilterConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> corsConfigurationSource())
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(
                                 "/auth/**",
@@ -49,6 +48,7 @@ public class SecurityFilterConfiguration {
                                 "/v3/api-docs/**"
                         ).permitAll()
                 )
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
                 .sessionManagement(sessionManager -> sessionManager.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider)
@@ -59,8 +59,7 @@ public class SecurityFilterConfiguration {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-                "*",
+        configuration.setAllowedOrigins(List.of(
                 "http://localhost:3000"
         ));
         configuration.setAllowedMethods(Arrays.asList(
