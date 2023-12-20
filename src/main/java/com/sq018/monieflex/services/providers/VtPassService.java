@@ -20,11 +20,8 @@ import com.sq018.monieflex.dtos.AirtimeDto;
 import com.sq018.monieflex.dtos.VtPassAirtimeDto;
 import com.sq018.monieflex.payloads.vtpass.VtPassAirtimeResponse;
 import com.sq018.monieflex.dtos.VtPassVerifySmartCardDto;
-import com.sq018.monieflex.exceptions.MonieFlexException;
-import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.vtpass.TvSubscriptionQueryContent;
 import com.sq018.monieflex.payloads.vtpass.VtPassTvSubscriptionQueryResponse;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -33,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
@@ -58,10 +56,12 @@ public class VtPassService {
 
     public String generateRequestId() {
         StringBuilder result = new StringBuilder();
-        String date = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE);
+        ZoneId gmtPlus1Zone = ZoneId.of("GMT+1");
+        LocalDateTime gmtPlus1DateTime = LocalDateTime.now(gmtPlus1Zone);
+        String date = gmtPlus1DateTime.format(DateTimeFormatter.ISO_DATE);
         result.append(date.replaceAll("-", ""));
-        result.append(LocalDateTime.now().getHour());
-        result.append(LocalDateTime.now().getMinute());
+        result.append(String.format("%02d", gmtPlus1DateTime.getHour()));
+        result.append(String.format("%02d", gmtPlus1DateTime.getMinute()));
         result.append(UUID.randomUUID().toString(), 0, 15);
         return result.toString();
     }
@@ -145,7 +145,9 @@ public class VtPassService {
                 electricityDto.billersCode(),
                 electricityDto.variationCode().getType(),
                 electricityDto.amount(),
-                electricityDto.phone()
+                electricityDto.phone(),
+                electricityDto.narration()
+
         );
         HttpEntity<VtPassElectricityDto> buyBody = new HttpEntity<>(vtElectricity, vtPassPostHeader());
         var buyResponse = restTemplate.postForEntity(
@@ -155,7 +157,7 @@ public class VtPassService {
             var reference = buyResponse.getBody().getToken() != null
                     ? buyResponse.getBody().getToken()
                     : buyResponse.getBody().getExchangeReference();
-            transaction.setNarration("Electricity Billing");
+            transaction.setNarration(electricityDto.narration());
             transaction.setReference(buyResponse.getBody().getRequestId());
             transaction.setProviderReference(reference);
             transaction.setStatus(TransactionStatus.SUCCESSFUL);

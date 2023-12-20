@@ -9,6 +9,7 @@ public record ElectricityDto(
         @JsonProperty("variation_code")
         BillType variationCode,
         Integer amount,
-        String phone
+        String phone,
+        String narration
 ) {
 }
