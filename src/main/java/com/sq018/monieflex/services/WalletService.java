@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -39,6 +40,7 @@ public class WalletService {
     private final WalletRepository walletRepository;
     private final UserUtil userUtil;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     protected String generateTxRef() {
         return "MONF-" + UUID.randomUUID().toString().substring(0, 6);
@@ -201,5 +203,27 @@ public class WalletService {
         payload.setBankName(wallet.getBankName());
 
         return new ApiResponse<>(payload, "Wallet successfully fetched");
+    }
+
+    public ApiResponse<String> createTransactionPin(String transactionPin) {
+        String email = UserUtil.getLoginUser();
+        var user = userRepository.findByEmailAddress(email).orElseThrow(
+                () -> new MonieFlexException("User not found")
+        );
+        user.setTransactionPin(passwordEncoder.encode(transactionPin));
+        userRepository.save(user);
+        return new ApiResponse<>("Pin saved successfully", HttpStatus.OK);
+    }
+
+    public ApiResponse<String> verifyPin(String pin) {
+        String email = UserUtil.getLoginUser();
+        var user = userRepository.findByEmailAddress(email).orElseThrow(
+                () -> new MonieFlexException("User not found")
+        );
+        if(passwordEncoder.matches(pin, user.getTransactionPin())) {
+            return new ApiResponse<>("Pin matches", HttpStatus.OK);
+        } else {
+            return new ApiResponse<>("Pin does not match", HttpStatus.BAD_REQUEST);
+        }
     }
 }
