@@ -142,12 +142,11 @@ public class WalletService {
     }
 
     public ApiResponse<LocalAccountQueryResponse> queryLocalAccount(LocalAccountQueryRequest localAccountQueryRequest){
-        List<Object[]> user = userRepository.findUserByWalletNumber(localAccountQueryRequest.getAccount());
-        if (ObjectUtils.isEmpty(user)){
-            return new ApiResponse<>("Invalid account", HttpStatus.BAD_REQUEST);
-        }
+        var wallet = walletRepository.findByNumber(localAccountQueryRequest.getAccount())
+                .orElseThrow(() -> new MonieFlexException("Invalid Account"));
+        var user = wallet.getUser();
         LocalAccountQueryResponse localAccountQueryResponse = new LocalAccountQueryResponse();
-        localAccountQueryResponse.setName(user.get(0)[0] + " " + user.get(0)[1]);
+        localAccountQueryResponse.setName(user.getFirstName() + " " + user.getLastName());
         return new ApiResponse<>(localAccountQueryResponse, "Success", HttpStatus.OK);
     }
 
