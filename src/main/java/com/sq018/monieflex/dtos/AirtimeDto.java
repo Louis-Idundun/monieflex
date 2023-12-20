@@ -9,7 +9,7 @@ public record AirtimeDto (
         String network,
         Integer amount,
         @JsonProperty("phone_number")
-        @Size(min = 11, message = "Phone number must be more than 11")
+        @Size(min = 11, max= 11, message = "Phone number must be more than 11")
         String phoneNumber,
         String narration,
         @JsonProperty("beneficiary_name")
