@@ -54,10 +54,12 @@ public class AirtimeService {
             if(vtResponse.getStatus() == TransactionStatus.FAILED) {
                 userUtil.updateWalletBalance(BigDecimal.valueOf(airtimeDto.amount()), false);
                 response.setStatus(HttpStatus.BAD_REQUEST);
+                response.setStatusCode(400);
                 response.setData(vtResponse.getStatus().toString());
                 response.setMessage("Couldn't complete transaction");
             } else {
                 response.setStatus(HttpStatus.OK);
+                response.setStatusCode(200);
                 response.setData(vtResponse.getStatus().toString());
                 response.setMessage("Transaction completed");
             }

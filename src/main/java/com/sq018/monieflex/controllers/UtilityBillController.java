@@ -15,6 +15,7 @@ import com.sq018.monieflex.services.DataService;
 import com.sq018.monieflex.services.TvService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -67,7 +68,7 @@ public class UtilityBillController {
     }
 
     @PostMapping("/airtime")
-    public ResponseEntity<ApiResponse<String>> airtime(@RequestBody AirtimeDto body) {
+    public ResponseEntity<ApiResponse<String>> airtime(@RequestBody @Validated AirtimeDto body) {
         var response = airtimeService.buyAirtime(body);
         return new ResponseEntity<>(response, response.getStatus());
     }

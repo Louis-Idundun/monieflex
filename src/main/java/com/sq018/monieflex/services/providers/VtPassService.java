@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
@@ -38,6 +39,8 @@ import java.util.UUID;
 @Service
 public class VtPassService {
 
+
+  //  @Value("${monieFlex.vtPass.public-key}")
     @Value("${VT_PUBLIC_KEY}")
     private String PUBLIC_KEY;
     @Value("${VT_SECRET_KEY}")
@@ -53,10 +56,12 @@ public class VtPassService {
 
     public String generateRequestId() {
         StringBuilder result = new StringBuilder();
-        String date = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE);
+        ZoneId gmtPlus1Zone = ZoneId.of("GMT+1");
+        LocalDateTime gmtPlus1DateTime = LocalDateTime.now(gmtPlus1Zone);
+        String date = gmtPlus1DateTime.format(DateTimeFormatter.ISO_DATE);
         result.append(date.replaceAll("-", ""));
-        result.append(LocalDateTime.now().getHour());
-        result.append(LocalDateTime.now().getMinute());
+        result.append(String.format("%02d", gmtPlus1DateTime.getHour()));
+        result.append(String.format("%02d", gmtPlus1DateTime.getMinute()));
         result.append(UUID.randomUUID().toString(), 0, 15);
         return result.toString();
     }

@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -54,13 +55,6 @@ public class WalletService {
 
     public ApiResponse<String> transferToBank(TransferDto transfer) {
         if(userUtil.isBalanceSufficient(BigDecimal.valueOf(transfer.amount()))) {
-            var bankName = "";
-            for(var bank : getAllBanks().getData()) {
-                if(bank.getCode().equalsIgnoreCase(transfer.bankCode())) {
-                    bankName = bank.getCode();
-                }
-            }
-
             Transaction transaction = new Transaction();
             transaction.setAccount(transfer.accountNumber());
             transaction.setNarration(transfer.narration());
@@ -68,7 +62,8 @@ public class WalletService {
             transaction.setReference(generateTxRef());
             transaction.setTransactionType(TransactionType.EXTERNAL_TRANSFER);
             transaction.setStatus(TransactionStatus.PENDING);
-            transaction.setReceivingBankName(bankName);
+            transaction.setReceivingBankName(transfer.bankName());
+            transaction.setReceiverName(transfer.receiverName());
             transaction.setReceivingBankCode(transfer.bankCode());
             transactionRepository.save(transaction);
 
@@ -113,6 +108,7 @@ public class WalletService {
         transaction.setNarration(localTransferRequest.getNarration());
         transaction.setAmount(localTransferRequest.getAmount());
         transaction.setReference(generateTxRef());
+        transaction.setReceiverName(localTransferRequest.getReceiverName());
         transaction.setTransactionType(TransactionType.LOCAL_TRANSFER);
         transaction.setStatus(TransactionStatus.PENDING);
         transaction.setReceivingBankName("Monieflex");
@@ -157,7 +153,7 @@ public class WalletService {
 
     public ApiResponse<List<TransactionHistoryResponse>> queryHistory(Integer page, Integer size) {
         String email = UserUtil.getLoginUser();
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("createdAt")));
         var transactions = transactionRepository.findByUser_EmailAddress(email, pageable);
         List<TransactionHistoryResponse> history = new ArrayList<>();
         transactions.forEach(transaction -> {
@@ -167,6 +163,7 @@ public class WalletService {
             response.setAmount(transaction.getAmount());
             response.setStatus(transaction.getStatus());
             response.setBillType(transaction.getBillType());
+            response.setReceiverName(transaction.getReceiverName());
             response.setProviderReference(transaction.getProviderReference());
             response.setTransactionType(transaction.getTransactionType());
             response.setReceivingBankName(transaction.getReceivingBankName());
@@ -179,7 +176,7 @@ public class WalletService {
 
     public ApiResponse<List<TransactionHistoryResponse>> queryHistory(Integer page, Integer size, TransactionType type) {
         String email = UserUtil.getLoginUser();
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("createdAt")));
         var transactions = transactionRepository.findByTransactionTypeAndUser_EmailAddress(type, email, pageable);
         List<TransactionHistoryResponse> history = new ArrayList<>();
         transactions.forEach(transaction -> {
@@ -189,6 +186,7 @@ public class WalletService {
             response.setAmount(transaction.getAmount());
             response.setStatus(transaction.getStatus());
             response.setBillType(transaction.getBillType());
+            response.setReceiverName(transaction.getReceiverName());
             response.setProviderReference(transaction.getProviderReference());
             response.setTransactionType(transaction.getTransactionType());
             response.setReceivingBankName(transaction.getReceivingBankName());
