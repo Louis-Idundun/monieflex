@@ -221,9 +221,9 @@ public class WalletService {
                 () -> new MonieFlexException("User not found")
         );
         if(passwordEncoder.matches(pin, user.getTransactionPin())) {
-            return new ApiResponse<>("Password matches", HttpStatus.OK);
+            return new ApiResponse<>("Pin matches", HttpStatus.OK);
         } else {
-            return new ApiResponse<>("Password does not match", HttpStatus.BAD_REQUEST);
+            return new ApiResponse<>("Pin does not match", HttpStatus.BAD_REQUEST);
         }
     }
 }
