@@ -70,24 +70,17 @@ public class WalletService {
             userUtil.updateWalletBalance(BigDecimal.valueOf(transfer.amount()), true);
 
             var result = flutterwaveService.bankTransfer(transfer, transaction.getReference());
-            ApiResponse<String> response = new ApiResponse<>();
-            if(transaction.getStatus() == TransactionStatus.SUCCESSFUL
-                    && result.getReference().equals(transaction.getReference())) {
+            if(result.getStatus() == TransactionStatus.SUCCESSFUL) {
                 transaction.setStatus(TransactionStatus.SUCCESSFUL);
                 transactionRepository.save(transaction);
                 userUtil.updateWalletBalance(BigDecimal.valueOf(transfer.amount()), false);
-                response.setStatus(HttpStatus.OK);
-                response.setMessage("Transaction Successful");
-                response.setData("Transfer to %s successful".formatted(transaction.getAccount()));
+                return new ApiResponse<>("Transaction successful", HttpStatus.OK);
             } else {
                 transaction.setStatus(TransactionStatus.FAILED);
                 transactionRepository.save(transaction);
                 userUtil.updateWalletBalance(BigDecimal.valueOf(transfer.amount()), false);
-                response.setStatus(HttpStatus.OK);
-                response.setMessage("Transaction Failed");
-                response.setData("Couldn't process transaction");
+                return new ApiResponse<>("Transaction failed", HttpStatus.BAD_REQUEST);
             }
-            return response;
         } else {
             throw new MonieFlexException("Insufficient Balance");
         }
