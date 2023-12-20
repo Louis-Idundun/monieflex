@@ -20,11 +20,8 @@ import com.sq018.monieflex.dtos.AirtimeDto;
 import com.sq018.monieflex.dtos.VtPassAirtimeDto;
 import com.sq018.monieflex.payloads.vtpass.VtPassAirtimeResponse;
 import com.sq018.monieflex.dtos.VtPassVerifySmartCardDto;
-import com.sq018.monieflex.exceptions.MonieFlexException;
-import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.vtpass.TvSubscriptionQueryContent;
 import com.sq018.monieflex.payloads.vtpass.VtPassTvSubscriptionQueryResponse;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -41,8 +38,6 @@ import java.util.UUID;
 @Service
 public class VtPassService {
 
-
-  //  @Value("${monieFlex.vtPass.public-key}")
     @Value("${VT_PUBLIC_KEY}")
     private String PUBLIC_KEY;
     @Value("${VT_SECRET_KEY}")
@@ -145,7 +140,9 @@ public class VtPassService {
                 electricityDto.billersCode(),
                 electricityDto.variationCode().getType(),
                 electricityDto.amount(),
-                electricityDto.phone()
+                electricityDto.phone(),
+                electricityDto.narration()
+
         );
         HttpEntity<VtPassElectricityDto> buyBody = new HttpEntity<>(vtElectricity, vtPassPostHeader());
         var buyResponse = restTemplate.postForEntity(
@@ -155,7 +152,7 @@ public class VtPassService {
             var reference = buyResponse.getBody().getToken() != null
                     ? buyResponse.getBody().getToken()
                     : buyResponse.getBody().getExchangeReference();
-            transaction.setNarration("Electricity Billing");
+            transaction.setNarration(electricityDto.narration());
             transaction.setReference(buyResponse.getBody().getRequestId());
             transaction.setProviderReference(reference);
             transaction.setStatus(TransactionStatus.SUCCESSFUL);

@@ -10,5 +10,6 @@ public record VtPassElectricityDto(
         @JsonProperty("variation_code")
         String variationCode,
         Integer amount,
-        String phone) {
+        String phone,
+        String narration) {
 }
