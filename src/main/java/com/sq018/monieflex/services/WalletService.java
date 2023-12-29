@@ -56,17 +56,20 @@ public class WalletService {
     }
 
     public ApiResponse<String> transferToBank(TransferDto transfer) {
+        String loginUserEmail = UserUtil.getLoginUser();
+        User user = userRepository.findByEmailAddress(loginUserEmail).orElseThrow();
         if(userUtil.isBalanceSufficient(BigDecimal.valueOf(transfer.amount()))) {
             Transaction transaction = new Transaction();
             transaction.setAccount(transfer.accountNumber());
             transaction.setNarration(transfer.narration());
             transaction.setAmount(BigDecimal.valueOf(transfer.amount()));
             transaction.setReference(generateTxRef());
-            transaction.setTransactionType(TransactionType.EXTERNAL_TRANSFER);
+            transaction.setTransactionType(TransactionType.EXTERNAL);
             transaction.setStatus(TransactionStatus.PENDING);
             transaction.setReceivingBankName(transfer.bankName());
             transaction.setReceiverName(transfer.receiverName());
             transaction.setReceivingBankCode(transfer.bankCode());
+            transaction.setUser(user);
             transactionRepository.save(transaction);
 
             userUtil.updateWalletBalance(BigDecimal.valueOf(transfer.amount()), true);
@@ -104,7 +107,7 @@ public class WalletService {
         transaction.setAmount(localTransferRequest.getAmount());
         transaction.setReference(generateTxRef());
         transaction.setReceiverName(localTransferRequest.getReceiverName());
-        transaction.setTransactionType(TransactionType.LOCAL_TRANSFER);
+        transaction.setTransactionType(TransactionType.LOCAL);
         transaction.setStatus(TransactionStatus.PENDING);
         transaction.setReceivingBankName("Monieflex");
         transactionRepository.save(transaction);
@@ -164,6 +167,7 @@ public class WalletService {
             response.setReceivingBankName(transaction.getReceivingBankName());
             response.setNarration(transaction.getNarration());
             response.setCreatedAt(transaction.getCreatedAt());
+            response.setVariation(transaction.getBillVariation());
             history.add(response);
         });
         return new ApiResponse<>(history, "Transaction History successfully fetched");
@@ -186,6 +190,7 @@ public class WalletService {
             response.setTransactionType(transaction.getTransactionType());
             response.setReceivingBankName(transaction.getReceivingBankName());
             response.setNarration(transaction.getNarration());
+            response.setVariation(transaction.getBillVariation());
             response.setCreatedAt(transaction.getCreatedAt());
             history.add(response);
         });
