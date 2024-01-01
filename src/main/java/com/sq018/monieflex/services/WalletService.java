@@ -17,6 +17,7 @@ import com.sq018.monieflex.repositories.UserRepository;
 import com.sq018.monieflex.repositories.WalletRepository;
 import com.sq018.monieflex.services.providers.FlutterwaveService;
 import com.sq018.monieflex.utils.UserUtil;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.PageRequest;
@@ -205,12 +206,21 @@ public class WalletService {
         return new ApiResponse<>(payload, "Wallet successfully fetched");
     }
 
-    public ApiResponse<String> createTransactionPin(String transactionPin) {
+    public ApiResponse<String> createTransactionPin(String pin) {
         String email = UserUtil.getLoginUser();
         var user = userRepository.findByEmailAddress(email).orElseThrow(
                 () -> new MonieFlexException("User not found")
         );
-        user.setTransactionPin(passwordEncoder.encode(transactionPin));
+        if(pin.length() < 4) {
+            throw new MonieFlexException("Pin cannot be less than 4");
+        }
+        if(pin.length() > 4) {
+            throw new MonieFlexException("Pin cannot be more than 4");
+        }
+        if(user.getTransactionPin() != null) {
+            throw new MonieFlexException("You already have a transaction pin.");
+        }
+        user.setTransactionPin(passwordEncoder.encode(pin));
         userRepository.save(user);
         return new ApiResponse<>("Pin saved successfully", HttpStatus.OK);
     }
@@ -220,10 +230,14 @@ public class WalletService {
         var user = userRepository.findByEmailAddress(email).orElseThrow(
                 () -> new MonieFlexException("User not found")
         );
-        if(passwordEncoder.matches(pin, user.getTransactionPin())) {
-            return new ApiResponse<>("Pin matches", HttpStatus.OK);
+        if(user.getTransactionPin() == null) {
+            throw new MonieFlexException("You have not created a pin yet");
         } else {
-            return new ApiResponse<>("Pin does not match", HttpStatus.BAD_REQUEST);
+            if(passwordEncoder.matches(pin, user.getTransactionPin())) {
+                return new ApiResponse<>("Pin matches", HttpStatus.OK);
+            } else {
+                throw new MonieFlexException("Pin does not match");
+            }
         }
     }
 }
