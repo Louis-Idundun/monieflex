@@ -149,7 +149,14 @@ public class AuthImplementation implements AuthService {
                             user.get().getEmailAddress()
                     );
                 } else {
-                    /// TODO:: Send Reset Password email
+                    emailImplementation.sendEmail(
+                            ForgotPasswordEmailTemplate.password(
+                                    user.get().getFirstName(),
+                                    generateToken(user.get(),expire)
+                            ),
+                            "Password Reset - Verify your email address",
+                            user.get().getEmailAddress()
+                    );
                 }
                 ApiResponse<String> response = new ApiResponse<>(
                         "Check your email for verification",
