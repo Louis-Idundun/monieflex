@@ -17,6 +17,7 @@ import com.sq018.monieflex.repositories.UserRepository;
 import com.sq018.monieflex.repositories.WalletRepository;
 import com.sq018.monieflex.services.providers.FlutterwaveService;
 import com.sq018.monieflex.utils.UserUtil;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.PageRequest;
@@ -57,17 +58,20 @@ public class WalletService {
     }
 
     public ApiResponse<String> transferToBank(TransferDto transfer) {
+        String loginUserEmail = UserUtil.getLoginUser();
+        User user = userRepository.findByEmailAddress(loginUserEmail).orElseThrow();
         if(userUtil.isBalanceSufficient(BigDecimal.valueOf(transfer.amount()))) {
             Transaction transaction = new Transaction();
             transaction.setAccount(transfer.accountNumber());
             transaction.setNarration(transfer.narration());
             transaction.setAmount(BigDecimal.valueOf(transfer.amount()));
             transaction.setReference(generateTxRef());
-            transaction.setTransactionType(TransactionType.EXTERNAL_TRANSFER);
+            transaction.setTransactionType(TransactionType.EXTERNAL);
             transaction.setStatus(TransactionStatus.PENDING);
             transaction.setReceivingBankName(transfer.bankName());
             transaction.setReceiverName(transfer.receiverName());
             transaction.setReceivingBankCode(transfer.bankCode());
+            transaction.setUser(user);
             transactionRepository.save(transaction);
 
             userUtil.updateWalletBalance(BigDecimal.valueOf(transfer.amount()), true);
@@ -105,7 +109,7 @@ public class WalletService {
         transaction.setAmount(localTransferRequest.getAmount());
         transaction.setReference(generateTxRef());
         transaction.setReceiverName(localTransferRequest.getReceiverName());
-        transaction.setTransactionType(TransactionType.LOCAL_TRANSFER);
+        transaction.setTransactionType(TransactionType.LOCAL);
         transaction.setStatus(TransactionStatus.PENDING);
         transaction.setReceivingBankName("Monieflex");
         transactionRepository.save(transaction);
@@ -165,6 +169,7 @@ public class WalletService {
             response.setReceivingBankName(transaction.getReceivingBankName());
             response.setNarration(transaction.getNarration());
             response.setCreatedAt(transaction.getCreatedAt());
+            response.setVariation(transaction.getBillVariation());
             history.add(response);
         });
         return new ApiResponse<>(history, "Transaction History successfully fetched");
@@ -187,6 +192,7 @@ public class WalletService {
             response.setTransactionType(transaction.getTransactionType());
             response.setReceivingBankName(transaction.getReceivingBankName());
             response.setNarration(transaction.getNarration());
+            response.setVariation(transaction.getBillVariation());
             response.setCreatedAt(transaction.getCreatedAt());
             history.add(response);
         });
@@ -206,12 +212,21 @@ public class WalletService {
         return new ApiResponse<>(payload, "Wallet successfully fetched");
     }
 
-    public ApiResponse<String> createTransactionPin(String transactionPin) {
+    public ApiResponse<String> createTransactionPin(String pin) {
         String email = UserUtil.getLoginUser();
         var user = userRepository.findByEmailAddress(email).orElseThrow(
                 () -> new MonieFlexException("User not found")
         );
-        user.setTransactionPin(passwordEncoder.encode(transactionPin));
+        if(pin.length() < 4) {
+            throw new MonieFlexException("Pin cannot be less than 4");
+        }
+        if(pin.length() > 4) {
+            throw new MonieFlexException("Pin cannot be more than 4");
+        }
+        if(user.getTransactionPin() != null) {
+            throw new MonieFlexException("You already have a transaction pin.");
+        }
+        user.setTransactionPin(passwordEncoder.encode(pin));
         userRepository.save(user);
         return new ApiResponse<>("Pin saved successfully", HttpStatus.OK);
     }
@@ -221,10 +236,14 @@ public class WalletService {
         var user = userRepository.findByEmailAddress(email).orElseThrow(
                 () -> new MonieFlexException("User not found")
         );
-        if(passwordEncoder.matches(pin, user.getTransactionPin())) {
-            return new ApiResponse<>("Pin matches", HttpStatus.OK);
+        if(user.getTransactionPin() == null) {
+            throw new MonieFlexException("You have not created a pin yet");
         } else {
-            return new ApiResponse<>("Pin does not match", HttpStatus.BAD_REQUEST);
+            if(passwordEncoder.matches(pin, user.getTransactionPin())) {
+                return new ApiResponse<>("Pin matches", HttpStatus.OK);
+            } else {
+                throw new MonieFlexException("Pin does not match");
+            }
         }
     }
 
@@ -253,7 +272,7 @@ public class WalletService {
         transaction.setNarration("Fund Wallet");
         transaction.setReference(fundWalletDto.getCardNumber());
         transaction.setReceiverName(user.getFirstName() + " " + user.getLastName());
-        transaction.setTransactionType(TransactionType.EXTERNAL_TRANSFER);
+        transaction.setTransactionType(TransactionType.EXTERNAL);
         transaction.setStatus(TransactionStatus.SUCCESSFUL);
         transaction.setReceivingBankName("MonieFlex");
         transactionRepository.save(transaction);

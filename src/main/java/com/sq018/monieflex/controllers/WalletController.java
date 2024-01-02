@@ -79,13 +79,13 @@ public class WalletController {
     }
 
     @PostMapping("/transaction-pin")
-    public ResponseEntity<ApiResponse<String>> createPin(@RequestBody String pin) {
+    public ResponseEntity<ApiResponse<String>> createPin(@RequestParam String pin) {
         var response = walletService.createTransactionPin(pin);
         return new ResponseEntity<>(response, response.getStatus());
     }
 
     @PostMapping("/verify-pin")
-    public ResponseEntity<ApiResponse<String>> verifyPin(@RequestBody String pin) {
+    public ResponseEntity<ApiResponse<String>> verifyPin(@RequestParam String pin) {
         var response = walletService.verifyPin(pin);
         return new ResponseEntity<>(response, response.getStatus());
     }
