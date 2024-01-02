@@ -41,6 +41,7 @@ public class WalletService {
     private final UserUtil userUtil;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private static final BigDecimal MINIMUM_FUND_AMOUNT = new BigDecimal("100.0");
 
     protected String generateTxRef() {
         return "MONF-" + UUID.randomUUID().toString().substring(0, 6);
@@ -226,4 +227,40 @@ public class WalletService {
             return new ApiResponse<>("Pin does not match", HttpStatus.BAD_REQUEST);
         }
     }
+
+    public ApiResponse<String> fundWallet(FundWalletDto fundWalletDto) {
+        // Validate credit card details using CreditCardValidationService
+        if (!CreditCardValidationService.validateCreditCard(fundWalletDto)) {
+            throw new MonieFlexException("Invalid credit card details");
+        }
+
+        if (fundWalletDto.getAmount().compareTo(MINIMUM_FUND_AMOUNT) < 0) {
+            throw new MonieFlexException("Amount to fund must be at least " + MINIMUM_FUND_AMOUNT);
+        }
+
+        String email = UserUtil.getLoginUser();
+        var user = userRepository.findByEmailAddress(email).orElseThrow(
+                () -> new MonieFlexException("User not found")
+        );
+        var wallet = walletRepository.findByUser_EmailAddressIgnoreCase(email).orElseThrow(
+                () -> new MonieFlexException("User not found")
+        );
+
+        Transaction transaction = new Transaction();
+        transaction.setAmount(fundWalletDto.getAmount());
+        transaction.setUser(user);
+        transaction.setAccount(wallet.getNumber());
+        transaction.setNarration("Fund Wallet");
+        transaction.setReference(fundWalletDto.getCardNumber());
+        transaction.setReceiverName(user.getFirstName() + " " + user.getLastName());
+        transaction.setTransactionType(TransactionType.EXTERNAL_TRANSFER);
+        transaction.setStatus(TransactionStatus.SUCCESSFUL);
+        transaction.setReceivingBankName("MonieFlex");
+        transactionRepository.save(transaction);
+
+        userUtil.updateWalletBalance(fundWalletDto.getAmount(), false);
+
+        return new ApiResponse<>("Transaction successful", HttpStatus.OK);
+    }
+
 }
