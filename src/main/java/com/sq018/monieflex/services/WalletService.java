@@ -248,7 +248,6 @@ public class WalletService {
     }
 
     public ApiResponse<String> fundWallet(FundWalletDto fundWalletDto) {
-        // Validate credit card details using CreditCardValidationService
         if (!CreditCardValidationService.validateCreditCard(fundWalletDto)) {
             throw new MonieFlexException("Invalid credit card details");
         }
