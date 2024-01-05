@@ -37,7 +37,7 @@ public class AirtimeService {
             transaction.setStatus(TransactionStatus.PENDING);
             transaction.setAmount(BigDecimal.valueOf(airtimeDto.amount()));
             transaction.setAccount(airtimeDto.phoneNumber());
-            transaction.setBillType(BillType.valueOf(airtimeDto.network()));
+            transaction.setBillType(airtimeDto.network());
             transaction.setTransactionType(TransactionType.AIRTIME);
             transaction.setUser(user);
             transaction.setReceiverName(airtimeDto.beneficiaryName());

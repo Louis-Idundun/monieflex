@@ -38,6 +38,7 @@ public class TransactionHistoryResponse {
         private String providerReference = null;
         @JsonProperty("bill_type")
         private BillType billType = null;
+        private String variation = null;
         @JsonProperty("narration")
         private String narration = null;
         @JsonProperty("created_at")

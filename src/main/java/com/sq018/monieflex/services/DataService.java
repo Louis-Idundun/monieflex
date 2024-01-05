@@ -21,8 +21,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class DataService {
-
-
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
     private final UserUtil userUtil;
@@ -30,7 +28,6 @@ public class DataService {
 
 
     public ApiResponse<List<VtpassDataVariation>> viewDataVariations(String code){
-
         return vtPassService.getDataVariations(code);
     }
 
@@ -44,13 +41,14 @@ public class DataService {
             userUtil.updateWalletBalance(BigDecimal.valueOf(dataSubscriptionDto.amount()), true);
             Transaction transaction = new Transaction();
             transaction.setStatus(TransactionStatus.PENDING);
-            transaction.setNarration("Electricity Billing");
-            transaction.setAccount(dataSubscriptionDto.billersCode());
+            transaction.setNarration(dataSubscriptionDto.narration());
+            transaction.setAccount(dataSubscriptionDto.phone());
             transaction.setUser(user);
             transaction.setReference(vtPassService.generateRequestId());
             transaction.setAmount(BigDecimal.valueOf(dataSubscriptionDto.amount()));
-            transaction.setTransactionType(TransactionType.BILLS);
-            transaction.setBillVariation(dataSubscriptionDto.variationCode().toUpperCase());
+            transaction.setTransactionType(TransactionType.DATA);
+            transaction.setBillType(dataSubscriptionDto.type());
+            transaction.setBillVariation(dataSubscriptionDto.data().toUpperCase());
             transactionRepository.save(transaction);
 
             var response = vtPassService.dataSubscription(dataSubscriptionDto, transaction);

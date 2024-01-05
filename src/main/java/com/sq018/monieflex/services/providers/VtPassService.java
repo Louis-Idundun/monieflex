@@ -141,9 +141,9 @@ public class VtPassService {
     public Transaction electricitySubscription(ElectricityDto electricityDto, Transaction transaction) {
         VtPassElectricityDto vtElectricity = new VtPassElectricityDto(
                 transaction.getReference(),
-                electricityDto.serviceID(),
-                electricityDto.billersCode(),
-                electricityDto.variationCode().getType(),
+                electricityDto.type().getType(),
+                electricityDto.meterNumber(),
+                electricityDto.productType().getType(),
                 electricityDto.amount(),
                 electricityDto.phone(),
                 electricityDto.narration()
@@ -172,9 +172,9 @@ public class VtPassService {
     public Transaction dataSubscription(DataSubscriptionDto dataSubscriptionDto, Transaction transaction) {
         VtpassDataSubscriptionDto vtData = new VtpassDataSubscriptionDto(
                 transaction.getReference(),
-                dataSubscriptionDto.serviceID(),
-                dataSubscriptionDto.billersCode(),
-                dataSubscriptionDto.variationCode(),
+                dataSubscriptionDto.type().getType(),
+                dataSubscriptionDto.phone(),
+                dataSubscriptionDto.data(),
                 dataSubscriptionDto.amount(),
                 dataSubscriptionDto.phone()
         );
@@ -200,7 +200,7 @@ public class VtPassService {
     public Transaction buyAirtime(AirtimeDto airtime, Transaction transaction) {
         VtPassAirtimeDto airtimeDto = new VtPassAirtimeDto(
                 generateRequestId(),
-                airtime.network().toLowerCase(),
+                airtime.network().getType(),
                 airtime.amount(),
                 airtime.phoneNumber()
         );
@@ -254,19 +254,16 @@ public class VtPassService {
         HttpEntity<VtpassTvSubscriptionDto> buyBody = new HttpEntity<>(vtpassTv,vtPassPostHeader());
         var response = restTemplate.postForEntity(VtpassEndpoints.PAY, buyBody, VtpassTVariationResponse.class);
 
+        System.out.println(Objects.requireNonNull(response.getBody()).getContent());
         if(Objects.requireNonNull(response.getBody()).getDescription().toLowerCase().contains("success")){
             var reference = response.getBody().getToken() != null
                     ? response.getBody().getToken()
                     : response.getBody().getExchangeReference();
-            transaction.setNarration("Cable Tv Bill");
-            transaction.setNarration(response.getBody().getRequestId());
             transaction.setProviderReference(reference);
             transaction.setStatus(TransactionStatus.SUCCESSFUL);
-
         }else {
             transaction.setStatus(TransactionStatus.FAILED);
         }
         return transaction;
-
     }
 }

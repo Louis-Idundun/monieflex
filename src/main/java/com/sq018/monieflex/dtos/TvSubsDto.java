@@ -9,7 +9,7 @@ public record TvSubsDto (
         String billersCode,
         @JsonProperty("variation_code")
         String variationCode,
-
+        String narration,
         Integer amount,
         String phone,
         SubscriptionType subscriptionType
