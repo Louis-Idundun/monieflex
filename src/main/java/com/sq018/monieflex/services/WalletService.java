@@ -54,6 +54,10 @@ public class WalletService {
     }
 
     public ApiResponse<String> transferToBank(TransferDto transfer) {
+        String loginUserEmail = UserUtil.getLoginUser();
+        User user = userRepository.findByEmailAddress(loginUserEmail).orElseThrow(
+                () -> new MonieFlexException("User not found")
+        );
         if(userUtil.isBalanceSufficient(BigDecimal.valueOf(transfer.amount()))) {
             Transaction transaction = new Transaction();
             transaction.setAccount(transfer.accountNumber());
@@ -65,6 +69,7 @@ public class WalletService {
             transaction.setReceivingBankName(transfer.bankName());
             transaction.setReceiverName(transfer.receiverName());
             transaction.setReceivingBankCode(transfer.bankCode());
+            transaction.setUser(user);
             transactionRepository.save(transaction);
 
             userUtil.updateWalletBalance(BigDecimal.valueOf(transfer.amount()), true);
@@ -88,14 +93,14 @@ public class WalletService {
 
     public ApiResponse<?> localTransfer(LocalTransferRequest localTransferRequest){
         String loginUserEmail = UserUtil.getLoginUser();
-        User user = userRepository.findByEmailAddress(loginUserEmail).orElse(null);
-        if (Objects.isNull(user)){
-            return new ApiResponse<>("Invalid Request", HttpStatus.BAD_REQUEST, 11);
-        }
+        User user = userRepository.findByEmailAddress(loginUserEmail).orElseThrow(
+                () -> new MonieFlexException("User not found")
+        );
         if (!userUtil.isBalanceSufficient(localTransferRequest.getAmount())){
-            return new ApiResponse<>("Insufficient Balance to complete this transaction", HttpStatus.BAD_REQUEST, 11);
+            return new ApiResponse<>("Insufficient Balance", HttpStatus.BAD_REQUEST);
         }
 
+        System.out.println("Hi");
         Transaction transaction = new Transaction();
         transaction.setAccount(localTransferRequest.getAccountNumber());
         transaction.setNarration(localTransferRequest.getNarration());
@@ -104,26 +109,22 @@ public class WalletService {
         transaction.setReceiverName(localTransferRequest.getReceiverName());
         transaction.setTransactionType(TransactionType.LOCAL_TRANSFER);
         transaction.setStatus(TransactionStatus.PENDING);
-        transaction.setReceivingBankName("Monieflex");
+        transaction.setReceivingBankName("MonieFlex");
+        transaction.setUser(user);
         transactionRepository.save(transaction);
 
         //todo restructure transaction table to cover debit and credit types
-        Wallet wallet = walletRepository.findByNumber(localTransferRequest.getAccountNumber()).orElse(null);
-        if (Objects.isNull(wallet)){
+        var wallet = walletRepository.findByNumber(localTransferRequest.getAccountNumber());
+        if (wallet.isPresent()){
+            userUtil.updateWalletBalance(localTransferRequest.getAmount(), true);
+            transaction.setStatus(TransactionStatus.SUCCESSFUL);
+            transactionRepository.save(transaction);
+            return new ApiResponse<>("Transfer Successful", HttpStatus.OK);
+        } else {
             transaction.setStatus(TransactionStatus.FAILED);
             transactionRepository.save(transaction);
-            return new ApiResponse<>("Invalid Request", HttpStatus.BAD_REQUEST, 11);
+            return new ApiResponse<>("Invalid Request", HttpStatus.BAD_REQUEST);
         }
-        userUtil.updateWalletBalance(localTransferRequest.getAmount(), true);
-        BigDecimal walletBalance = wallet.getBalance();
-        BigDecimal newWalletBalance = walletBalance.add(localTransferRequest.getAmount());
-        wallet.setBalance(newWalletBalance);
-        walletRepository.save(wallet);
-
-        transaction.setStatus(TransactionStatus.SUCCESSFUL);
-        transactionRepository.save(transaction);
-
-        return new ApiResponse<>("Transfer Successful", HttpStatus.OK, 1);
     }
 
     public ApiResponse<List<AllBanksData>> getAllBanks(){
