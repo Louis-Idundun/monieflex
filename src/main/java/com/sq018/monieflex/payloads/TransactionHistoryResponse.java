@@ -28,6 +28,8 @@ public class TransactionHistoryResponse {
         private TransactionStatus status;
         @JsonProperty("account")
         private String account;
+        @JsonProperty("receiver_name")
+        private String receiverName;
         @JsonProperty("receiving_bank_name")
         private String receivingBankName = null;
         @JsonProperty("transaction_type")
@@ -36,6 +38,7 @@ public class TransactionHistoryResponse {
         private String providerReference = null;
         @JsonProperty("bill_type")
         private BillType billType = null;
+        private String variation = null;
         @JsonProperty("narration")
         private String narration = null;
         @JsonProperty("created_at")

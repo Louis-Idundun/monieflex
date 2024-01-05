@@ -13,16 +13,11 @@ public class VtpassTVariationResponse {
     private String description;
     @JsonProperty("content")
     private VtpassTVariationContent content;
-
     @JsonProperty("response_Id")
     private String requestId;
-
     private String amount;
-
     @JsonProperty("purchased_code")
     private String purchasedCode;
-
     private String exchangeReference;
-
     private String token;
 }

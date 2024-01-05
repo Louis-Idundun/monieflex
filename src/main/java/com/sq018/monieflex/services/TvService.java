@@ -14,6 +14,7 @@ import com.sq018.monieflex.repositories.UserRepository;
 import com.sq018.monieflex.services.providers.VtPassService;
 import com.sq018.monieflex.utils.UserUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -44,20 +45,21 @@ public class TvService {
             userUtil.updateWalletBalance(BigDecimal.valueOf(tvSubsDto.amount()), true);
             Transaction transaction = new Transaction();
             transaction.setStatus(TransactionStatus.PENDING);
-            transaction.setNarration("Cable Tv Bill");
+            transaction.setNarration(tvSubsDto.narration());
             transaction.setAccount(tvSubsDto.billersCode());
             transaction.setAmount(BigDecimal.valueOf(tvSubsDto.amount()));
             transaction.setReference(vtPassService.generateRequestId());
-            transaction.setTransactionType(TransactionType.BILLS);
+            transaction.setTransactionType(TransactionType.TV);
             transaction.setBillVariation(tvSubsDto.variationCode().toUpperCase());
             transaction.setUser(user);
 
             var response = vtPassService.tvSubscription(tvSubsDto, transaction);
             if (response.getReference().equals(transaction.getReference())) {
+                transactionRepository.save(response);
                 if (response.getStatus() == TransactionStatus.FAILED) {
                     userUtil.updateWalletBalance(response.getAmount(), false);
+                    return new ApiResponse<>("Transaction failed", HttpStatus.BAD_REQUEST);
                 }
-                transactionRepository.save(response);
                 return new ApiResponse<>(
                         response.getAccount(),
                         response.getStatus().name()

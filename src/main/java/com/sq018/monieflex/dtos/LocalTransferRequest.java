@@ -16,5 +16,7 @@ public class LocalTransferRequest {
     @NotBlank(message = "Amount cannot be empty")
     private BigDecimal amount;
 
+    private String receiverName;
+
     private String narration;
 }

@@ -79,4 +79,16 @@ public class WalletController {
         ApiResponse<?> response = walletService.queryLocalAccount(localAccountQueryRequest);
         return new ResponseEntity<>(response, response.getStatus());
     }
+
+    @PostMapping("/transaction-pin")
+    public ResponseEntity<ApiResponse<String>> createPin(@RequestParam String pin) {
+        var response = walletService.createTransactionPin(pin);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+    @PostMapping("/verify-pin")
+    public ResponseEntity<ApiResponse<String>> verifyPin(@RequestParam String pin) {
+        var response = walletService.verifyPin(pin);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
 }

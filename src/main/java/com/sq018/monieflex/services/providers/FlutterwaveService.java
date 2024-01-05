@@ -98,12 +98,12 @@ public class FlutterwaveService {
             if (Objects.requireNonNull(flwAllBanksResponse).getStatus().equalsIgnoreCase("success")){
                 List<AllBanksData> allBanksData = flwAllBanksResponse.getData();
                 if (ObjectUtils.isNotEmpty(allBanksData)){
-                    return new ApiResponse<>("Request Process Successfully", HttpStatus.OK, 1, allBanksData);
+                    return new ApiResponse<>("Request Process Successfully", HttpStatus.OK, 200, allBanksData);
                 }
             }
-            return new ApiResponse<>("Unable to process this request at this moment", HttpStatus.BAD_REQUEST, 99);
+            return new ApiResponse<>("Unable to process this request at this moment", HttpStatus.BAD_REQUEST, 400);
         }
-        return new ApiResponse<>("Unable to process this request at this moment", HttpStatus.BAD_REQUEST, 99);
+        return new ApiResponse<>("Unable to process this request at this moment", HttpStatus.BAD_REQUEST, 400);
     }
 
     public Transaction bankTransfer(TransferDto transfer, String reference) {

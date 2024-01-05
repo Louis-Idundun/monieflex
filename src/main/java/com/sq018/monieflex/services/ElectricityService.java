@@ -10,7 +10,6 @@ import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.vtpass.VtPassVerifyMeterContent;
 import com.sq018.monieflex.repositories.TransactionRepository;
 import com.sq018.monieflex.repositories.UserRepository;
-import com.sq018.monieflex.repositories.WalletRepository;
 import com.sq018.monieflex.services.providers.VtPassService;
 import com.sq018.monieflex.utils.UserUtil;
 import lombok.RequiredArgsConstructor;
@@ -36,13 +35,13 @@ public class ElectricityService {
             userUtil.updateWalletBalance(BigDecimal.valueOf(electricityDto.amount()), true);
             Transaction transaction = new Transaction();
             transaction.setStatus(TransactionStatus.PENDING);
-            transaction.setNarration("Electricity Billing");
-            transaction.setAccount(electricityDto.billersCode());
+            transaction.setNarration(electricityDto.narration());
+            transaction.setAccount(electricityDto.meterNumber());
             transaction.setUser(user);
             transaction.setReference(vtPassService.generateRequestId());
             transaction.setAmount(BigDecimal.valueOf(electricityDto.amount()));
-            transaction.setTransactionType(TransactionType.BILLS);
-            transaction.setBillVariation(electricityDto.serviceID().toUpperCase());
+            transaction.setTransactionType(TransactionType.ELECTRICITY);
+            transaction.setBillType(electricityDto.type());
             transactionRepository.save(transaction);
 
             var response = vtPassService.electricitySubscription(electricityDto, transaction);

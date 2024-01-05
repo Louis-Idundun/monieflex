@@ -37,10 +37,9 @@ public class User extends BaseEntity implements UserDetails {
     private Boolean passwordRecovery = false;
 
     @Column(name = "transaction_pin")
-    @Min(value = 4, message = "Pin should not be less than 4 digits")
     private String transactionPin;
 
-    @Column(name = "email_address")
+    @Column(name = "email_address", unique = true)
     @Email(message = "Email must be properly formatted")
     private String emailAddress;
 
