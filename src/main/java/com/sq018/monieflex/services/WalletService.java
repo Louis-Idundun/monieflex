@@ -101,7 +101,6 @@ public class WalletService {
             return new ApiResponse<>("Insufficient Balance", HttpStatus.BAD_REQUEST);
         }
 
-        System.out.println("Hi");
         Transaction transaction = new Transaction();
         transaction.setAccount(localTransferRequest.getAccountNumber());
         transaction.setNarration(localTransferRequest.getNarration());
@@ -114,17 +113,17 @@ public class WalletService {
         transaction.setUser(user);
         transactionRepository.save(transaction);
 
-        //todo restructure transaction table to cover debit and credit types
         var wallet = walletRepository.findByNumber(localTransferRequest.getAccountNumber());
         if (wallet.isPresent()){
             userUtil.updateWalletBalance(localTransferRequest.getAmount(), true);
+            wallet.get().setBalance(wallet.get().getBalance().add(localTransferRequest.getAmount()));
             transaction.setStatus(TransactionStatus.SUCCESSFUL);
             transactionRepository.save(transaction);
             return new ApiResponse<>("Transfer Successful", HttpStatus.OK);
         } else {
             transaction.setStatus(TransactionStatus.FAILED);
             transactionRepository.save(transaction);
-            return new ApiResponse<>("Invalid Request", HttpStatus.BAD_REQUEST);
+            return new ApiResponse<>("Transaction failed", HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -139,6 +138,13 @@ public class WalletService {
     public ApiResponse<LocalAccountQueryResponse> queryLocalAccount(LocalAccountQueryRequest localAccountQueryRequest){
         var wallet = walletRepository.findByNumber(localAccountQueryRequest.getAccount())
                 .orElseThrow(() -> new MonieFlexException("Invalid Account"));
+        var userWallet = walletRepository.findByUser_EmailAddressIgnoreCase(UserUtil.getLoginUser())
+                .orElseThrow(() -> new MonieFlexException("User not found"));
+
+        if(localAccountQueryRequest.getAccount().equals(userWallet.getNumber())) {
+            throw new MonieFlexException("You cannot transfer money from your wallet to your wallet");
+        }
+
         var user = wallet.getUser();
         LocalAccountQueryResponse localAccountQueryResponse = new LocalAccountQueryResponse();
         localAccountQueryResponse.setName(user.getFirstName() + " " + user.getLastName());
