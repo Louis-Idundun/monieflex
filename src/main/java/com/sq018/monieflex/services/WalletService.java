@@ -106,12 +106,11 @@ public class WalletService {
 
     public ApiResponse<?> localTransfer(LocalTransferRequest localTransferRequest){
         String loginUserEmail = UserUtil.getLoginUser();
-        User user = userRepository.findByEmailAddress(loginUserEmail).orElse(null);
-        if (Objects.isNull(user)){
-            return new ApiResponse<>("Invalid Request", HttpStatus.BAD_REQUEST, 11);
-        }
+        User user = userRepository.findByEmailAddress(loginUserEmail).orElseThrow(
+                () -> new MonieFlexException("User not found")
+        );
         if (!userUtil.isBalanceSufficient(localTransferRequest.getAmount())){
-            return new ApiResponse<>("Insufficient Balance to complete this transaction", HttpStatus.BAD_REQUEST, 11);
+            return new ApiResponse<>("Insufficient Balance", HttpStatus.BAD_REQUEST);
         }
 
         Transaction transaction = new Transaction();
@@ -122,26 +121,22 @@ public class WalletService {
         transaction.setReceiverName(localTransferRequest.getReceiverName());
         transaction.setTransactionType(TransactionType.LOCAL);
         transaction.setStatus(TransactionStatus.PENDING);
-        transaction.setReceivingBankName("Monieflex");
+        transaction.setReceivingBankName("MonieFlex");
+        transaction.setUser(user);
         transactionRepository.save(transaction);
 
-        //todo restructure transaction table to cover debit and credit types
-        Wallet wallet = walletRepository.findByNumber(localTransferRequest.getAccountNumber()).orElse(null);
-        if (Objects.isNull(wallet)){
+        var wallet = walletRepository.findByNumber(localTransferRequest.getAccountNumber());
+        if (wallet.isPresent()){
+            userUtil.updateWalletBalance(localTransferRequest.getAmount(), true);
+            wallet.get().setBalance(wallet.get().getBalance().add(localTransferRequest.getAmount()));
+            transaction.setStatus(TransactionStatus.SUCCESSFUL);
+            transactionRepository.save(transaction);
+            return new ApiResponse<>("Transfer Successful", HttpStatus.OK);
+        } else {
             transaction.setStatus(TransactionStatus.FAILED);
             transactionRepository.save(transaction);
-            return new ApiResponse<>("Invalid Request", HttpStatus.BAD_REQUEST, 11);
+            return new ApiResponse<>("Transaction failed", HttpStatus.BAD_REQUEST);
         }
-        userUtil.updateWalletBalance(localTransferRequest.getAmount(), true);
-        BigDecimal walletBalance = wallet.getBalance();
-        BigDecimal newWalletBalance = walletBalance.add(localTransferRequest.getAmount());
-        wallet.setBalance(newWalletBalance);
-        walletRepository.save(wallet);
-
-        transaction.setStatus(TransactionStatus.SUCCESSFUL);
-        transactionRepository.save(transaction);
-
-        return new ApiResponse<>("Transfer Successful", HttpStatus.OK, 1);
     }
 
     public ApiResponse<List<AllBanksData>> getAllBanks(){
@@ -153,12 +148,18 @@ public class WalletService {
     }
 
     public ApiResponse<LocalAccountQueryResponse> queryLocalAccount(LocalAccountQueryRequest localAccountQueryRequest){
-        List<Object[]> user = userRepository.findUserByWalletNumber(localAccountQueryRequest.getAccount());
-        if (ObjectUtils.isEmpty(user)){
-            return new ApiResponse<>("Invalid account", HttpStatus.BAD_REQUEST);
+        var wallet = walletRepository.findByNumber(localAccountQueryRequest.getAccount())
+                .orElseThrow(() -> new MonieFlexException("Invalid Account"));
+        var userWallet = walletRepository.findByUser_EmailAddressIgnoreCase(UserUtil.getLoginUser())
+                .orElseThrow(() -> new MonieFlexException("User not found"));
+
+        if(localAccountQueryRequest.getAccount().equals(userWallet.getNumber())) {
+            throw new MonieFlexException("You cannot transfer money from your wallet to your wallet");
         }
+
+        var user = wallet.getUser();
         LocalAccountQueryResponse localAccountQueryResponse = new LocalAccountQueryResponse();
-        localAccountQueryResponse.setName(user.get(0)[0] + " " + user.get(0)[1]);
+        localAccountQueryResponse.setName(user.getFirstName() + " " + user.getLastName());
         return new ApiResponse<>(localAccountQueryResponse, "Success", HttpStatus.OK);
     }
 
