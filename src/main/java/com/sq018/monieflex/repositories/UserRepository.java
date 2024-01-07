@@ -1,6 +1,6 @@
 package com.sq018.monieflex.repositories;
 
-import com.sq018.monieflex.entities.account.User;
+import com.sq018.monieflex.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

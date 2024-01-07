@@ -100,7 +100,7 @@ public class MonieFlexExceptionHandler extends ResponseEntityExceptionHandler {
     public ApiResponse<String> handleBadCredentialsException(){
         return new ApiResponse<>(
                 "Incorrect user details",
-                HttpStatus.BAD_REQUEST
+                HttpStatus.UNAUTHORIZED
         );
     }
 
@@ -108,7 +108,7 @@ public class MonieFlexExceptionHandler extends ResponseEntityExceptionHandler {
     public ApiResponse<String> handleExpiredJwtException(){
         return new ApiResponse<>(
                 "Token is expired. Try login or request for another",
-                HttpStatus.BAD_REQUEST
+                HttpStatus.UNAUTHORIZED
         );
     }
 
@@ -116,7 +116,7 @@ public class MonieFlexExceptionHandler extends ResponseEntityExceptionHandler {
     public ApiResponse<String> handleMalformedJwtException(){
         return new ApiResponse<>(
                 "Incorrect token",
-                HttpStatus.BAD_REQUEST
+                HttpStatus.UNAUTHORIZED
         );
     }
 

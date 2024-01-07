@@ -3,13 +3,11 @@ package com.sq018.monieflex.payloads.vtpass;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -19,5 +17,4 @@ public class VtPassVerifyMeterContent {
     private String customerName;
     @JsonProperty("Address")
     private String address;
-
 }

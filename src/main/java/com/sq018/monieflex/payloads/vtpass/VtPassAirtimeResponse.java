@@ -23,8 +23,6 @@ public class VtPassAirtimeResponse {
     public String transactionId;
     @JsonProperty("amount")
     public String amount;
-    @JsonProperty("transaction_date")
-    public VtPassAirtimeTransactionDate transactionDate;
     @JsonProperty("purchased_code")
     public String purchasedCode;
 }

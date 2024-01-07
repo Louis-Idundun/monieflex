@@ -1,13 +1,14 @@
 package com.sq018.monieflex.services;
 
 import com.sq018.monieflex.dtos.*;
-import com.sq018.monieflex.entities.account.User;
-import com.sq018.monieflex.entities.account.Wallet;
-import com.sq018.monieflex.entities.transactions.Transaction;
+import com.sq018.monieflex.entities.User;
+import com.sq018.monieflex.entities.Wallet;
+import com.sq018.monieflex.entities.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.TransactionDataResponse;
 import com.sq018.monieflex.payloads.TransactionHistoryResponse;
 import com.sq018.monieflex.payloads.WalletPayload;
 import com.sq018.monieflex.payloads.flutterwave.VerifyAccountResponse;
@@ -16,8 +17,8 @@ import com.sq018.monieflex.repositories.TransactionRepository;
 import com.sq018.monieflex.repositories.UserRepository;
 import com.sq018.monieflex.repositories.WalletRepository;
 import com.sq018.monieflex.services.providers.FlutterwaveService;
+import com.sq018.monieflex.utils.TimeUtils;
 import com.sq018.monieflex.utils.UserUtil;
-import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +29,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -42,6 +46,8 @@ public class WalletService {
     private final UserUtil userUtil;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private final Integer AVERAGE = 1000;
 
     protected String generateTxRef() {
         return "MONF-" + UUID.randomUUID().toString().substring(0, 6);
@@ -155,23 +161,83 @@ public class WalletService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("createdAt")));
         var transactions = transactionRepository.findByUser_EmailAddress(email, pageable);
         List<TransactionHistoryResponse> history = new ArrayList<>();
-        transactions.forEach(transaction -> {
-            TransactionHistoryResponse response = new TransactionHistoryResponse();
-            response.setAccount(transaction.getAccount());
-            response.setId(transaction.getId());
-            response.setAmount(transaction.getAmount());
-            response.setStatus(transaction.getStatus());
-            response.setBillType(transaction.getBillType());
-            response.setReceiverName(transaction.getReceiverName());
-            response.setProviderReference(transaction.getProviderReference());
-            response.setTransactionType(transaction.getTransactionType());
-            response.setReceivingBankName(transaction.getReceivingBankName());
-            response.setNarration(transaction.getNarration());
-            response.setCreatedAt(transaction.getCreatedAt());
-            response.setVariation(transaction.getBillVariation());
-            history.add(response);
-        });
+        transactions.forEach(transaction -> history.add(prepareTransactionHistory(transaction)));
         return new ApiResponse<>(history, "Transaction History successfully fetched");
+    }
+
+    private String getName(Transaction transaction) {
+        if(transaction.getTransactionType() == TransactionType.AIRTIME
+            || transaction.getTransactionType() == TransactionType.DATA
+        ) {
+            return transaction.getAccount();
+        } else if(transaction.getTransactionType() == TransactionType.TV) {
+            return transaction.getAccount();
+        } else if(transaction.getTransactionType() == TransactionType.ELECTRICITY) {
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            String date = transaction.getCreatedAt().format(timeFormatter);
+            return date + "/" + transaction.getAccount().substring(transaction.getAccount().length() - 5);
+        } else {
+            return transaction.getReceiverName();
+        }
+    }
+
+    private String getDescription(Transaction transaction) {
+        if(transaction.getTransactionType() == TransactionType.AIRTIME) {
+            return transaction.getReceiverName();
+        } else if(transaction.getTransactionType() == TransactionType.TV) {
+            return transaction.getBillVariation().toUpperCase();
+        } else if(transaction.getTransactionType() == TransactionType.ELECTRICITY) {
+            return transaction.getBillType().name().toUpperCase();
+        } else if(transaction.getTransactionType() == TransactionType.DATA) {
+            return transaction.getBillVariation().toUpperCase();
+        } else {
+            return transaction.getNarration();
+        }
+    }
+
+    public static String getTime(LocalDateTime dateTime) {
+        LocalDateTime currentDateTime = LocalDateTime.now();
+
+        if (dateTime.toLocalDate().equals(currentDateTime.toLocalDate())) {
+            return "Today";
+        } else if (dateTime.toLocalDate().equals(currentDateTime.minusDays(1).toLocalDate())) {
+            return "Yesterday";
+        } else {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mma");
+            return dateTime.format(formatter);
+        }
+    }
+
+    public static String getDate(LocalDateTime dateTime) {
+        LocalDateTime currentDateTime = LocalDateTime.now();
+
+        if (dateTime.toLocalDate().equals(currentDateTime.toLocalDate())) {
+            return "Today";
+        } else if (dateTime.toLocalDate().equals(currentDateTime.minusDays(1).toLocalDate())) {
+            return "Yesterday";
+        } else {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            return dateTime.format(formatter);
+        }
+    }
+
+    public static String getAmount(BigDecimal n) {
+        return NumberFormat.getCurrencyInstance().format(n);
+    }
+
+    private TransactionHistoryResponse prepareTransactionHistory(Transaction transaction) {
+        String loginUserEmail = UserUtil.getLoginUser();
+        Wallet user = walletRepository.findByUser_EmailAddressIgnoreCase(loginUserEmail)
+                .orElseThrow(() -> new MonieFlexException("User not found"));
+
+        TransactionHistoryResponse response = new TransactionHistoryResponse();
+        response.setName(getName(transaction));
+        response.setDescription(getDescription(transaction));
+        response.setTime(getTime(transaction.getCreatedAt()));
+        response.setDate(getDate(transaction.getCreatedAt()));
+        response.setAmount(getAmount(transaction.getAmount()));
+        response.setIsCredit(user.getNumber().equals(transaction.getAccount()));
+        return response;
     }
 
     public ApiResponse<List<TransactionHistoryResponse>> queryHistory(Integer page, Integer size, TransactionType type) {
@@ -179,22 +245,7 @@ public class WalletService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("createdAt")));
         var transactions = transactionRepository.findByTransactionTypeAndUser_EmailAddress(type, email, pageable);
         List<TransactionHistoryResponse> history = new ArrayList<>();
-        transactions.forEach(transaction -> {
-            TransactionHistoryResponse response = new TransactionHistoryResponse();
-            response.setAccount(transaction.getAccount());
-            response.setId(transaction.getId());
-            response.setAmount(transaction.getAmount());
-            response.setStatus(transaction.getStatus());
-            response.setBillType(transaction.getBillType());
-            response.setReceiverName(transaction.getReceiverName());
-            response.setProviderReference(transaction.getProviderReference());
-            response.setTransactionType(transaction.getTransactionType());
-            response.setReceivingBankName(transaction.getReceivingBankName());
-            response.setNarration(transaction.getNarration());
-            response.setVariation(transaction.getBillVariation());
-            response.setCreatedAt(transaction.getCreatedAt());
-            history.add(response);
-        });
+        transactions.forEach(transaction -> history.add(prepareTransactionHistory(transaction)));
         return new ApiResponse<>(history, "Transaction History successfully fetched");
     }
 
@@ -244,5 +295,102 @@ public class WalletService {
                 throw new MonieFlexException("Pin does not match");
             }
         }
+    }
+
+    public ApiResponse<List<TransactionDataResponse>> getTransactionChart() {
+        var transactions = transactionRepository.queryByUser_EmailAddress(UserUtil.getLoginUser());
+        var months = TimeUtils.getMonths();
+
+        List<Transaction> month1 = new ArrayList<>();
+        List<Transaction> month2 = new ArrayList<>();
+        List<Transaction> month3 = new ArrayList<>();
+        List<Transaction> month4 = new ArrayList<>();
+        List<Transaction> month5 = new ArrayList<>();
+        List<Transaction> month6 = new ArrayList<>();
+        List<Transaction> month7 = new ArrayList<>();
+        List<Transaction> month8 = new ArrayList<>();
+
+        List<TransactionDataResponse> list = new ArrayList<>();
+        transactions.forEach(transaction -> {
+            if(transaction.getCreatedAt().getMonth().name().equals(months.get(0))) {
+                month1.add(transaction);
+            } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(1))) {
+                month2.add(transaction);
+            } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(2))) {
+                month3.add(transaction);
+            } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(3))) {
+                month4.add(transaction);
+            } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(4))) {
+                month5.add(transaction);
+            } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(5))) {
+                month6.add(transaction);
+            } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(6))) {
+                month7.add(transaction);
+            } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(7))) {
+                month8.add(transaction);
+            }
+        });
+
+        var month1Response = prepareChart(month1, months.get(0));
+        list.add(month1Response);
+
+        var month2Response = prepareChart(month2, months.get(1));
+        list.add(month2Response);
+
+        var month3Response = prepareChart(month3, months.get(2));
+        list.add(month3Response);
+
+        var month4Response = prepareChart(month4, months.get(3));
+        list.add(month4Response);
+
+        var month5Response = prepareChart(month5, months.get(4));
+        list.add(month5Response);
+
+        var month6Response = prepareChart(month6, months.get(5));
+        list.add(month6Response);
+
+        var month7Response = prepareChart(month7, months.get(6));
+        list.add(month7Response);
+
+        var month8Response = prepareChart(month8, months.get(7));
+        list.add(month8Response);
+
+        return new ApiResponse<>(list, "Data fetched successfully", HttpStatus.OK);
+    }
+
+    private TransactionDataResponse prepareChart(List<Transaction> transactions, String month) {
+        Wallet user = walletRepository.findByUser_EmailAddressIgnoreCase(UserUtil.getLoginUser())
+                .orElseThrow(() -> new MonieFlexException("User not found"));
+
+        List<BigDecimal> incomeList = new ArrayList<>();
+        List<BigDecimal> expenseList = new ArrayList<>();
+
+        transactions.forEach(transaction -> {
+            var isCredit = user.getNumber().equals(transaction.getAccount());
+            if(isCredit) {
+                incomeList.add(transaction.getAmount());
+            } else {
+                expenseList.add(transaction.getAmount());
+            }
+        });
+
+        var income = calculateExpenditure(incomeList);
+        var expense = calculateExpenditure(expenseList);
+        TransactionDataResponse response = new TransactionDataResponse();
+        response.setIncome(income);
+        response.setExpense(expense);
+        response.setMonth(month.substring(0, 3));
+        return response;
+    }
+
+    private String calculateExpenditure(List<BigDecimal> list) {
+        double total = 0.0;
+
+        for (BigDecimal bigDecimal : list) {
+            total += Double.parseDouble(String.valueOf(bigDecimal));
+        }
+        var data = total * 30;
+        var result = data / AVERAGE;
+        return String.valueOf(result);
     }
 }

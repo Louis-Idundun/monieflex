@@ -1,6 +1,6 @@
 package com.sq018.monieflex.utils;
 
-import com.sq018.monieflex.entities.transactions.Transaction;
+import com.sq018.monieflex.entities.Transaction;
 import com.sq018.monieflex.repositories.TransactionRepository;
 import com.sq018.monieflex.repositories.WalletRepository;
 import lombok.RequiredArgsConstructor;

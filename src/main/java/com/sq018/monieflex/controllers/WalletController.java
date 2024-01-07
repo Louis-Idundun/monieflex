@@ -6,6 +6,7 @@ import com.sq018.monieflex.dtos.LocalTransferRequest;
 import com.sq018.monieflex.dtos.TransferDto;
 import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.TransactionDataResponse;
 import com.sq018.monieflex.payloads.TransactionHistoryResponse;
 import com.sq018.monieflex.payloads.WalletPayload;
 import com.sq018.monieflex.payloads.flutterwave.AllBanksData;
@@ -89,6 +90,12 @@ public class WalletController {
     @PostMapping("/verify-pin")
     public ResponseEntity<ApiResponse<String>> verifyPin(@RequestParam String pin) {
         var response = walletService.verifyPin(pin);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+    @GetMapping("/data")
+    public ResponseEntity<ApiResponse<List<TransactionDataResponse>>> viewDataChart() {
+        var response = walletService.getTransactionChart();
         return new ResponseEntity<>(response, response.getStatus());
     }
 }

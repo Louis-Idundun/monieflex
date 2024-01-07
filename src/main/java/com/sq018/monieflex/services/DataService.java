@@ -6,7 +6,7 @@ import com.sq018.monieflex.payloads.vtpass.VtpassDataVariation;
 import com.sq018.monieflex.services.providers.VtPassService;
 import lombok.RequiredArgsConstructor;
 import com.sq018.monieflex.dtos.DataSubscriptionDto;
-import com.sq018.monieflex.entities.transactions.Transaction;
+import com.sq018.monieflex.entities.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.payloads.ApiResponse;

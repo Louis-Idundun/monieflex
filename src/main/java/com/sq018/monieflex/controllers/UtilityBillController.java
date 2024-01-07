@@ -76,7 +76,7 @@ public class UtilityBillController {
 
     @PostMapping("/verify-electricity")
     public ResponseEntity<ApiResponse<VtPassVerifyMeterContent>> queryElectricityAccount(
-            @RequestBody VtPassVerifyMeterDto verifyMeter) {
+            @RequestBody VerifyMeterDto verifyMeter) {
         var response = electricityService.queryElectricityAccount(verifyMeter);
         return new ResponseEntity<>(response, response.getStatus());
     }
