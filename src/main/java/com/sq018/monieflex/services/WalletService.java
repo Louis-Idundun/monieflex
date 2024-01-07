@@ -16,8 +16,8 @@ import com.sq018.monieflex.repositories.TransactionRepository;
 import com.sq018.monieflex.repositories.UserRepository;
 import com.sq018.monieflex.repositories.WalletRepository;
 import com.sq018.monieflex.services.providers.FlutterwaveService;
+import com.sq018.monieflex.utils.CreditCardUtils;
 import com.sq018.monieflex.utils.UserUtil;
-import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.PageRequest;
@@ -248,11 +248,9 @@ public class WalletService {
     }
 
     public ApiResponse<String> fundWallet(FundWalletDto fundWalletDto) {
-        if (!CreditCardValidationService.validateCreditCard(fundWalletDto)) {
-            throw new MonieFlexException("Invalid credit card details");
-        }
+        var card = CreditCardUtils.verify(() -> fundWalletDto).orElseThrow();
 
-        if (fundWalletDto.getAmount().compareTo(MINIMUM_FUND_AMOUNT) < 0) {
+        if (card.getAmount().compareTo(MINIMUM_FUND_AMOUNT) < 0) {
             throw new MonieFlexException("Amount to fund must be at least " + MINIMUM_FUND_AMOUNT);
         }
 

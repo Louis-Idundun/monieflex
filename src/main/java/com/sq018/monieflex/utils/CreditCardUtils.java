@@ -1,28 +1,29 @@
-package com.sq018.monieflex.services;
+package com.sq018.monieflex.utils;
 
 import com.sq018.monieflex.dtos.FundWalletDto;
+import com.sq018.monieflex.exceptions.MonieFlexException;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 @Service
-public class CreditCardValidationService {
-    public static boolean validateCreditCard(FundWalletDto creditCard) {
-        if (!isValidExpiryDate(creditCard.getExpiryDate())) {
-            return false;
-        }
+public class CreditCardUtils {
 
-        if (!isValidCVV(creditCard.getCardNumber(), creditCard.getCvv())) {
-            return false;
+    public static Optional<FundWalletDto> verify(Supplier<FundWalletDto> card) {
+        if (!isValidExpiryDate(card.get().getExpiryDate())) {
+            throw new MonieFlexException("Invalid Expiry Date");
         }
-
-        if (!isValidCardNumber(creditCard.getCardNumber())) {
-            return false;
+        if (!isValidCVV(card.get().getCardNumber(), card.get().getCvv())) {
+            throw new MonieFlexException("Invalid Card CVV");
         }
-
-        return true;
+        if (!isValidCardNumber(card.get().getCardNumber())) {
+            throw new MonieFlexException("Invalid Card Number");
+        }
+        return Optional.of(card.get());
     }
 
     private static boolean isValidExpiryDate(String expiryDate) {

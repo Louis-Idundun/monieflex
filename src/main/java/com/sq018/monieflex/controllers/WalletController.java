@@ -90,7 +90,7 @@ public class WalletController {
         return new ResponseEntity<>(response, response.getStatus());
     }
 
-    @PostMapping("/fund")
+    @PostMapping("/fund-wallet")
     public ResponseEntity<ApiResponse<String>> fundWallet(@Validated @RequestBody FundWalletDto fundWalletDto) {
         var response = walletService.fundWallet(fundWalletDto);
         return new ResponseEntity<>(response, response.getStatus());
