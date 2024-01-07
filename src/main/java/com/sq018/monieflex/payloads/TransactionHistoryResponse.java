@@ -28,6 +28,7 @@ public class TransactionHistoryResponse {
         private TransactionStatus status;
         @JsonProperty("account")
         private String account;
+        private String mode;
         @JsonProperty("receiver_name")
         private String receiverName;
         @JsonProperty("receiving_bank_name")

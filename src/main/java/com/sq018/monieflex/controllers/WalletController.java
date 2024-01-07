@@ -1,15 +1,13 @@
 package com.sq018.monieflex.controllers;
 
-import com.sq018.monieflex.dtos.FLWVerifyAccountDto;
-import com.sq018.monieflex.dtos.LocalAccountQueryRequest;
-import com.sq018.monieflex.dtos.LocalTransferRequest;
-import com.sq018.monieflex.dtos.TransferDto;
+import com.sq018.monieflex.dtos.*;
 import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.TransactionHistoryResponse;
 import com.sq018.monieflex.payloads.WalletPayload;
 import com.sq018.monieflex.payloads.flutterwave.AllBanksData;
 import com.sq018.monieflex.services.WalletService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -89,6 +87,17 @@ public class WalletController {
     @PostMapping("/verify-pin")
     public ResponseEntity<ApiResponse<String>> verifyPin(@RequestParam String pin) {
         var response = walletService.verifyPin(pin);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+    @PostMapping("/fund-wallet")
+    public ResponseEntity<ApiResponse<String>> fundWallet(@Valid @RequestBody FundWalletDto fundWalletDto) {
+        var response = walletService.fundWallet(fundWalletDto);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+    @GetMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<String>> verifyFundWallet(@RequestParam String otp) {
+        var response = walletService.verifyFundWallet(otp);
         return new ResponseEntity<>(response, response.getStatus());
     }
 }
