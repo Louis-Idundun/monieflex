@@ -38,9 +38,6 @@ import java.util.UUID;
 
 @Service
 public class VtPassService {
-
-
-  //  @Value("${monieFlex.vtPass.public-key}")
     @Value("${VT_PUBLIC_KEY}")
     private String PUBLIC_KEY;
     @Value("${VT_SECRET_KEY}")

@@ -32,16 +32,8 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class FlutterwaveService {
-
-    @Value("${monieFlex.flutterwave.public-key}")
-    private String FLW_PUBLIC_KEY;
-
     @Value("${monieFlex.flutterwave.secret-key}")
     private String FLW_SECRET_KEY;
-
-    @Value("${monieFlex.flutterwave.encryption-key}")
-    private String FLW_ENC_KEY;
-
     private final RestTemplate rest;
 
     public FlutterwaveService(RestTemplate rest) {

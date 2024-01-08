@@ -8,9 +8,9 @@ import com.sq018.monieflex.payloads.TransactionHistoryResponse;
 import com.sq018.monieflex.payloads.WalletPayload;
 import com.sq018.monieflex.payloads.flutterwave.AllBanksData;
 import com.sq018.monieflex.services.WalletService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -90,10 +90,15 @@ public class WalletController {
         var response = walletService.verifyPin(pin);
         return new ResponseEntity<>(response, response.getStatus());
     }
-
     @PostMapping("/fund-wallet")
-    public ResponseEntity<ApiResponse<String>> fundWallet(@Validated @RequestBody FundWalletDto fundWalletDto) {
+    public ResponseEntity<ApiResponse<String>> fundWallet(@Valid @RequestBody FundWalletDto fundWalletDto) {
         var response = walletService.fundWallet(fundWalletDto);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+    @GetMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<String>> verifyFundWallet(@RequestParam String otp) {
+        var response = walletService.verifyFundWallet(otp);
         return new ResponseEntity<>(response, response.getStatus());
     }
 

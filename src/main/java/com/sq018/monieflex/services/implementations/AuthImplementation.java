@@ -15,6 +15,7 @@ import com.sq018.monieflex.services.WalletService;
 import com.sq018.monieflex.utils.ForgotPasswordEmailTemplate;
 import com.sq018.monieflex.utils.SignupEmailTemplate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -107,11 +108,11 @@ public class AuthImplementation implements AuthService {
     }
 
     @Override
-    public String confirmEmail(String token) {
+    public ApiResponse<String> confirmEmail(String token) {
         String email = jwtImplementation.extractEmailAddressFromToken(token);
         if(email != null) {
             if(jwtImplementation.isExpired(token)) {
-                return "Link has expired. Please request for a new link.";
+                throw new MonieFlexException("Link has expired. Please request for a new link.") ;
             } else {
                 var user = userRepository.findByEmailAddress(email);
                 if(user.isPresent()) {
@@ -119,16 +120,19 @@ public class AuthImplementation implements AuthService {
                         var update = user.get();
                         update.setStatus(AccountStatus.ACTIVE);
                         userRepository.save(update);
-                        return "Your email address is now verified. Please login.";
+                        return new ApiResponse<>(
+                                "Your email address is now verified. Please login.",
+                                HttpStatus.OK
+                        );
                     } else {
-                        return "Email address is already verified.";
+                        throw new MonieFlexException("Email address is already verified.") ;
                     }
                 } else {
-                    return "User not found. Please check the link.";
+                    throw new MonieFlexException("User not found. Please check the link.");
                 }
             }
         } else {
-            return "Link is not properly formatted.";
+            throw new MonieFlexException("Link is not properly formatted.");
         }
     }
 

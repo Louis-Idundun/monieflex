@@ -1,9 +1,11 @@
 package com.sq018.monieflex.services;
 
 import com.sq018.monieflex.dtos.*;
+
 import com.sq018.monieflex.entities.User;
 import com.sq018.monieflex.entities.Wallet;
 import com.sq018.monieflex.entities.Transaction;
+import com.sq018.monieflex.entities.transactions.VerifyFundWallet;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.exceptions.MonieFlexException;
@@ -15,10 +17,13 @@ import com.sq018.monieflex.payloads.flutterwave.VerifyAccountResponse;
 import com.sq018.monieflex.payloads.flutterwave.AllBanksData;
 import com.sq018.monieflex.repositories.TransactionRepository;
 import com.sq018.monieflex.repositories.UserRepository;
+import com.sq018.monieflex.repositories.VerifyFundWalletRepository;
 import com.sq018.monieflex.repositories.WalletRepository;
+import com.sq018.monieflex.services.implementations.EmailImplementation;
 import com.sq018.monieflex.services.providers.FlutterwaveService;
 import com.sq018.monieflex.utils.TimeUtils;
-import com.sq018.monieflex.utils.CreditCardUtils;
+import com.sq018.monieflex.utils.CreditCardUtil;
+import com.sq018.monieflex.utils.OtpEmailTemplate;
 import com.sq018.monieflex.utils.UserUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +37,7 @@ import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -45,7 +51,10 @@ public class WalletService {
     private final UserUtil userUtil;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailImplementation emailImplementation;
+
     private static final BigDecimal MINIMUM_FUND_AMOUNT = new BigDecimal("100.0");
+    private final VerifyFundWalletRepository verifyFundWalletRepository;
 
     private final Integer AVERAGE = 1000;
 
@@ -75,7 +84,6 @@ public class WalletService {
             transaction.setStatus(TransactionStatus.PENDING);
             transaction.setReceivingBankName(transfer.bankName());
             transaction.setReceiverName(transfer.receiverName());
-            transaction.setReceivingBankCode(transfer.bankCode());
             transaction.setUser(user);
             transactionRepository.save(transaction);
 
@@ -394,8 +402,9 @@ public class WalletService {
         var result = data / AVERAGE;
         return String.valueOf(result);
     }
+
     public ApiResponse<String> fundWallet(FundWalletDto fundWalletDto) {
-        var card = CreditCardUtils.verify(() -> fundWalletDto).orElseThrow();
+        var card = CreditCardUtil.verify(() -> fundWalletDto).orElseThrow();
 
         if (card.getAmount().compareTo(MINIMUM_FUND_AMOUNT) < 0) {
             throw new MonieFlexException("Amount to fund must be at least " + MINIMUM_FUND_AMOUNT);
@@ -409,20 +418,63 @@ public class WalletService {
                 () -> new MonieFlexException("User not found")
         );
 
+        StringBuilder OTP = new StringBuilder(6);
+        for(int i = 0; i < 6; i++) {
+            String CHARACTERS = "0123456789";
+            SecureRandom random = new SecureRandom();
+            int index = random.nextInt(CHARACTERS.length());
+            OTP.append(CHARACTERS.charAt(index));
+        }
+
         Transaction transaction = new Transaction();
-        transaction.setAmount(fundWalletDto.getAmount());
+        transaction.setAmount(card.getAmount());
         transaction.setUser(user);
         transaction.setAccount(wallet.getNumber());
         transaction.setNarration("Fund Wallet");
-        transaction.setReference(fundWalletDto.getCardNumber());
         transaction.setReceiverName(user.getFirstName() + " " + user.getLastName());
-        transaction.setTransactionType(TransactionType.EXTERNAL);
-        transaction.setStatus(TransactionStatus.SUCCESSFUL);
+        transaction.setTransactionType(TransactionType.LOCAL);
+        transaction.setStatus(TransactionStatus.PENDING);
         transaction.setReceivingBankName("MonieFlex");
-        transactionRepository.save(transaction);
+        transaction.setReference(card.getCardName());
+        transaction.setReference(CreditCardUtil.mask(card.getCardNumber()));
+        var saved = transactionRepository.save(transaction);
 
-        userUtil.updateWalletBalance(fundWalletDto.getAmount(), false);
+        VerifyFundWallet verifyFundWallet = new VerifyFundWallet();
+        verifyFundWallet.setExpiresAt(LocalDateTime.now().plusMinutes(15));
+        verifyFundWallet.setOtp(passwordEncoder.encode(OTP));
+        verifyFundWallet.setUser(user);
+        verifyFundWallet.setTransaction(saved);
+        verifyFundWallet.setIsUsed(false);
+        verifyFundWalletRepository.save(verifyFundWallet);
 
+        emailImplementation.sendEmail(
+                OtpEmailTemplate.email(user.getFirstName(), OTP.toString()),
+                "Verify your card transaction",
+                user.getEmailAddress()
+        );
+        return new ApiResponse<>("Check your email to verify transaction", HttpStatus.OK);
+    }
+
+    public ApiResponse<String> verifyFundWallet(String OTP) {
+         var result = verifyFundWalletRepository
+                 .findByIsUsedAndUser_EmailAddress(false, UserUtil.getLoginUser());
+         if(result.isEmpty()) {
+             throw new MonieFlexException("Request cannot be completed");
+         } else {
+             var response = result.stream().filter(verify -> passwordEncoder.matches(OTP, verify.getOtp()))
+                     .findAny().orElseThrow(() -> new MonieFlexException("OTP is not correct"));
+             if(LocalDateTime.now().isAfter(response.getExpiresAt())) {
+                 throw new MonieFlexException("OTP expired. Please try again");
+             } else {
+                 response.setIsUsed(true);
+                 verifyFundWalletRepository.save(response);
+                 transactionRepository.findById(response.getTransaction().getId()).ifPresentOrElse(
+                         transaction -> userUtil.updateWalletBalance(transaction.getAmount(), false),
+                         () -> {
+                             throw new MonieFlexException("Error occurred while completing request");
+                         });
+             }
+         }
         return new ApiResponse<>("Transaction successful", HttpStatus.OK);
     }
 }

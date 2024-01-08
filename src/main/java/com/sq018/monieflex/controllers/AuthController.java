@@ -35,8 +35,9 @@ public class AuthController {
     }
 
     @GetMapping("/confirm-email-address")
-    public String confirmEmailAddress(@RequestParam String token) {
-        return authService.confirmEmail(token);
+    public ResponseEntity<ApiResponse<String>> confirmEmailAddress(@RequestParam String token) {
+        var response = authService.confirmEmail(token);
+        return new ResponseEntity<>(response, response.getStatus());
     }
 
     @GetMapping("/resend-link")

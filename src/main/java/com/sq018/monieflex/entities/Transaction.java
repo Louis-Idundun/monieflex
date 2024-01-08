@@ -27,9 +27,6 @@ public class Transaction extends BaseEntity {
     @Column(name = "receiving_bank_name")
     private String receivingBankName;
 
-    @Column(name = "receiving_bank_code")
-    private String receivingBankCode;
-
     @Column(name = "receiver_name")
     private String receiverName;
 
