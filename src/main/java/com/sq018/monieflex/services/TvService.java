@@ -2,7 +2,7 @@ package com.sq018.monieflex.services;
 
 import com.sq018.monieflex.dtos.VtPassVerifySmartCardDto;
 import com.sq018.monieflex.dtos.TvSubsDto;
-import com.sq018.monieflex.entities.transactions.Transaction;
+import com.sq018.monieflex.entities.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.exceptions.MonieFlexException;

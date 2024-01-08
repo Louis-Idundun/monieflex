@@ -1,7 +1,5 @@
-package com.sq018.monieflex.entities.transactions;
+package com.sq018.monieflex.entities;
 
-import com.sq018.monieflex.entities.BaseEntity;
-import com.sq018.monieflex.entities.account.User;
 import com.sq018.monieflex.enums.BillType;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.enums.TransactionType;

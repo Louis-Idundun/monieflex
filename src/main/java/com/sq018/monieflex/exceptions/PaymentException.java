@@ -1,6 +1,6 @@
 package com.sq018.monieflex.exceptions;
 
-import com.sq018.monieflex.entities.transactions.Transaction;
+import com.sq018.monieflex.entities.Transaction;
 import lombok.Getter;
 
 import java.math.BigDecimal;

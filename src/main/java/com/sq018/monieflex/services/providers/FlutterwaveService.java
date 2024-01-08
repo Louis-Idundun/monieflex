@@ -4,8 +4,8 @@ import com.sq018.monieflex.dtos.FLWTransferDto;
 import com.sq018.monieflex.dtos.FLWVerifyAccountDto;
 import com.sq018.monieflex.dtos.FLWVirtualDto;
 import com.sq018.monieflex.dtos.TransferDto;
-import com.sq018.monieflex.entities.account.Wallet;
-import com.sq018.monieflex.entities.transactions.Transaction;
+import com.sq018.monieflex.entities.Wallet;
+import com.sq018.monieflex.entities.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.ApiResponse;
@@ -32,16 +32,8 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class FlutterwaveService {
-
-    @Value("${monieFlex.flutterwave.public-key}")
-    private String FLW_PUBLIC_KEY;
-
     @Value("${monieFlex.flutterwave.secret-key}")
     private String FLW_SECRET_KEY;
-
-    @Value("${monieFlex.flutterwave.encryption-key}")
-    private String FLW_ENC_KEY;
-
     private final RestTemplate rest;
 
     public FlutterwaveService(RestTemplate rest) {

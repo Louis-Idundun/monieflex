@@ -3,6 +3,7 @@ package com.sq018.monieflex.controllers;
 import com.sq018.monieflex.dtos.*;
 import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.payloads.ApiResponse;
+import com.sq018.monieflex.payloads.TransactionDataResponse;
 import com.sq018.monieflex.payloads.TransactionHistoryResponse;
 import com.sq018.monieflex.payloads.WalletPayload;
 import com.sq018.monieflex.payloads.flutterwave.AllBanksData;
@@ -98,6 +99,12 @@ public class WalletController {
     @GetMapping("/verify-otp")
     public ResponseEntity<ApiResponse<String>> verifyFundWallet(@RequestParam String otp) {
         var response = walletService.verifyFundWallet(otp);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+    @GetMapping("/data")
+    public ResponseEntity<ApiResponse<List<TransactionDataResponse>>> viewDataChart() {
+        var response = walletService.getTransactionChart();
         return new ResponseEntity<>(response, response.getStatus());
     }
 }

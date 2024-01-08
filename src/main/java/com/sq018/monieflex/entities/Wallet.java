@@ -1,6 +1,5 @@
-package com.sq018.monieflex.entities.account;
+package com.sq018.monieflex.entities;
 
-import com.sq018.monieflex.entities.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;

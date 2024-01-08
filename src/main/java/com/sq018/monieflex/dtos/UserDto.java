@@ -1,6 +1,6 @@
 package com.sq018.monieflex.dtos;
 
-import com.sq018.monieflex.entities.account.User;
+import com.sq018.monieflex.entities.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;

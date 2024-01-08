@@ -2,7 +2,7 @@ package com.sq018.monieflex.services.implementations;
 
 import com.sq018.monieflex.dtos.LoginDto;
 import com.sq018.monieflex.dtos.SignupDto;
-import com.sq018.monieflex.entities.account.User;
+import com.sq018.monieflex.entities.User;
 import com.sq018.monieflex.enums.AccountStatus;
 import com.sq018.monieflex.enums.VerifyType;
 import com.sq018.monieflex.exceptions.MonieFlexException;

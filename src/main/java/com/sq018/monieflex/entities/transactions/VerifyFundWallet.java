@@ -1,12 +1,11 @@
 package com.sq018.monieflex.entities.transactions;
 
 import com.sq018.monieflex.entities.BaseEntity;
-import com.sq018.monieflex.entities.account.User;
+import com.sq018.monieflex.entities.Transaction;
+import com.sq018.monieflex.entities.User;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 import java.time.LocalDateTime;
 

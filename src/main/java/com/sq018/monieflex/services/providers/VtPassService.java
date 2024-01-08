@@ -1,7 +1,7 @@
 package com.sq018.monieflex.services.providers;
 
 import com.sq018.monieflex.dtos.*;
-import com.sq018.monieflex.entities.transactions.Transaction;
+import com.sq018.monieflex.entities.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.payloads.vtpass.*;
 import com.sq018.monieflex.exceptions.MonieFlexException;
@@ -38,9 +38,6 @@ import java.util.UUID;
 
 @Service
 public class VtPassService {
-
-
-  //  @Value("${monieFlex.vtPass.public-key}")
     @Value("${VT_PUBLIC_KEY}")
     private String PUBLIC_KEY;
     @Value("${VT_SECRET_KEY}")
@@ -223,21 +220,27 @@ public class VtPassService {
     }
 
     @SneakyThrows
-    public ApiResponse<VtPassVerifyMeterContent> queryElectricityAccount(VtPassVerifyMeterDto verifyMeter) {
-        HttpEntity<VtPassVerifyMeterDto> verifyBody = new HttpEntity<>(verifyMeter, vtPassPostHeader());
+    public ApiResponse<VtPassVerifyMeterContent> queryElectricityAccount(VerifyMeterDto verifyMeter) {
+        VtPassVerifyMeterDto data = new VtPassVerifyMeterDto(
+                verifyMeter.product().getType(),
+                verifyMeter.meter(),
+                verifyMeter.disco().getType()
+        );
+        HttpEntity<VtPassVerifyMeterDto> verifyBody = new HttpEntity<>(data, vtPassPostHeader());
         var response = restTemplate.postForObject(
                 VtpassEndpoints.VERIFY_NUMBER,
                 verifyBody, VtPassVerifyMeterResponse.class
         );
         if(Objects.requireNonNull(response).getCode().equalsIgnoreCase("000")) {
-            if(ObjectUtils.isNotEmpty(response.getContent())) {
+            System.out.println(response.getContent() );
+            if(ObjectUtils.isNotEmpty(response.getContent().getCustomerName())) {
                 return new ApiResponse<>(
                         response.getContent(),
-                        "Successful"
+                        "Account verified"
                 );
             }
         }
-        throw new MonieFlexException("Request failed");
+        throw new MonieFlexException("Error: Couldn't fetch account");
     }
 
     @SneakyThrows

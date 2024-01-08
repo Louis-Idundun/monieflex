@@ -1,12 +1,8 @@
-package com.sq018.monieflex.entities.account;
+package com.sq018.monieflex.entities;
 
-import com.sq018.monieflex.entities.BaseEntity;
-import com.sq018.monieflex.entities.transactions.Beneficiary;
-import com.sq018.monieflex.entities.transactions.Transaction;
 import com.sq018.monieflex.enums.AccountStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
@@ -60,9 +56,6 @@ public class User extends BaseEntity implements UserDetails {
 
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<Transaction> transactions;
-
-    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<Beneficiary> beneficiaries;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
