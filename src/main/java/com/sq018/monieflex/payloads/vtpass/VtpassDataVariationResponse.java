@@ -1,5 +1,6 @@
 package com.sq018.monieflex.payloads.vtpass;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
