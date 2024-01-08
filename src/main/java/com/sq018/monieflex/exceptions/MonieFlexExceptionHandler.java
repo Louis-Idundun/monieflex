@@ -22,6 +22,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -117,6 +118,14 @@ public class MonieFlexExceptionHandler extends ResponseEntityExceptionHandler {
         return new ApiResponse<>(
                 "Incorrect token",
                 HttpStatus.UNAUTHORIZED
+        );
+    }
+
+    @ExceptionHandler(UnknownHostException.class)
+    public ApiResponse<String> handleUnknownHostException(){
+        return new ApiResponse<>(
+                "An error occurred while handling request. Check your internet connection.",
+                HttpStatus.BAD_REQUEST
         );
     }
 
