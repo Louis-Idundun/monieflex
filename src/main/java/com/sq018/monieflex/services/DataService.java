@@ -57,10 +57,17 @@ public class DataService {
                     userUtil.updateWalletBalance(response.getAmount(), false);
                 }
                 transactionRepository.save(response);
-                return new ApiResponse<>(
-                        response.getAccount(),
-                        response.getStatus().name()
-                );
+
+                String message;
+                if(response.getStatus() == TransactionStatus.SUCCESSFUL) {
+                    message = "Transaction successful";
+                } else if(response.getStatus() == TransactionStatus.PENDING) {
+                    message = "Transaction incomplete";
+                } else {
+                    message = "Transaction failed";
+                }
+
+                return new ApiResponse<>(response.getAccount(), message);
             } else {
                 throw new MonieFlexException("Error in completing transaction");
             }

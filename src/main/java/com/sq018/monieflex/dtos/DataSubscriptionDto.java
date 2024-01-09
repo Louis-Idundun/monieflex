@@ -1,5 +1,6 @@
 package com.sq018.monieflex.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sq018.monieflex.enums.BillType;
 
 public record DataSubscriptionDto(
@@ -8,4 +9,7 @@ public record DataSubscriptionDto(
         Integer amount,
         String phone,
         String narration
-){ }
+
+){
+
+}

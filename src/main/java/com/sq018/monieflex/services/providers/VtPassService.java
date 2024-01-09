@@ -104,13 +104,13 @@ public class VtPassService {
                 VtpassEndpoints.VARIATION_URL(code), HttpMethod.GET, entity, VtpassDataVariationResponse.class
         );
         if(response.getStatusCode().is2xxSuccessful()){
-            if(Objects.requireNonNull(response.getBody()).getDescription().equalsIgnoreCase("000")){
-                if(ObjectUtils.isNotEmpty(response.getBody().getContent().getVariations())){
-                    return new ApiResponse<>(
-                            response.getBody().getContent().getVariations(),
-                            "Request successfully processed");
+                if (Objects.requireNonNull(response.getBody()).getDescription().equalsIgnoreCase("000")) {
+                    if (ObjectUtils.isNotEmpty(response.getBody().getContent().getVariations())) {
+                        return new ApiResponse<>(
+                                response.getBody().getContent().getVariations(),
+                                "Request successfully processed");
+                    }
                 }
-            }
         }
             throw new MonieFlexException("Request failed");
     }
@@ -172,7 +172,7 @@ public class VtPassService {
                 dataSubscriptionDto.type().getType(),
                 dataSubscriptionDto.phone(),
                 dataSubscriptionDto.data(),
-                dataSubscriptionDto.amount(),
+                Integer.valueOf(dataSubscriptionDto.amount()),
                 dataSubscriptionDto.phone()
         );
         HttpEntity<VtpassDataSubscriptionDto> buyBody = new HttpEntity<>(vtData, vtPassPostHeader());
