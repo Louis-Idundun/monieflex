@@ -2,6 +2,7 @@ package com.sq018.monieflex.controllers;
 
 
 import com.sq018.monieflex.dtos.*;
+import com.sq018.monieflex.enums.BillType;
 import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.payloads.vtpass.VtPassVerifyMeterContent;
 import com.sq018.monieflex.payloads.vtpass.VtpassDataVariation;
@@ -49,14 +50,14 @@ public class UtilityBillController {
     }
 
     @GetMapping("/data-variations")
-    public ResponseEntity<ApiResponse<List<VtpassDataVariation>>> fetchDataVariation(@RequestParam String code) {
+    public ResponseEntity<ApiResponse<List<VtpassDataVariation>>> fetchDataVariation(@RequestParam BillType code) {
         var response = dataService.viewDataVariations(code);
         return new ResponseEntity<>(response, response.getStatus());
 
     }
 
      @GetMapping("/tv-variations")
-     public ResponseEntity<ApiResponse<List<VtpassTVariation>>> fetchTvVariation(@RequestParam String code) {
+     public ResponseEntity<ApiResponse<List<VtpassTVariation>>> fetchTvVariation(@RequestParam BillType code) {
          var response = tvService.viewTvVariations(code);
          return new ResponseEntity<>(response, response.getStatus());
 
@@ -83,7 +84,7 @@ public class UtilityBillController {
 
     @PostMapping("/verify-smart-card")
     public ResponseEntity<ApiResponse<TvSubscriptionQueryContent>> queryTvAccount(
-            @RequestBody VtPassVerifySmartCardDto smartCard
+            @RequestBody VerifySmartCard smartCard
     ) {
         var response = tvService.queryTvAccount(smartCard);
         return new ResponseEntity<>(response, response.getStatus());

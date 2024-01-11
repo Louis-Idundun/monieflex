@@ -8,8 +8,8 @@ import lombok.Getter;
 public enum BillType {
     DSTV("dstv"),
     GOTV("gotv"),
-    STAR_TIMES("startimes"),
-    SHOW_MAX("showmax"),
+    STARTIMES("startimes"),
+    SHOWMAX("showmax"),
 
     MTN_AIRTIME("mtn"),
     GLO_AIRTIME("glo"),

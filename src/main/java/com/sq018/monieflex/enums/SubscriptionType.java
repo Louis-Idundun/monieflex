@@ -1,6 +1,13 @@
 package com.sq018.monieflex.enums;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum SubscriptionType {
-    BOUQUET_CHANGE,
-    RENEW
+    CHANGE("change"),
+    RENEWAL("renew");
+
+    private final String type;
 }

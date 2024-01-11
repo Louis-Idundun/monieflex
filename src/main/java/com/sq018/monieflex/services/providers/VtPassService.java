@@ -1,5 +1,6 @@
 package com.sq018.monieflex.services.providers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sq018.monieflex.dtos.*;
 import com.sq018.monieflex.entities.Transaction;
 import com.sq018.monieflex.enums.TransactionStatus;
@@ -81,38 +82,48 @@ public class VtPassService {
 
 
     @SneakyThrows
-    public ApiResponse<TvSubscriptionQueryContent> queryTVAccount(VtPassVerifySmartCardDto body) {
-        HttpEntity<VtPassVerifySmartCardDto> verifyBody = new HttpEntity<>(body, vtPassPostHeader());
+    public ApiResponse<TvSubscriptionQueryContent> queryTVAccount(VerifySmartCard body) {
+        VtPassVerifySmartCardDto dto = new VtPassVerifySmartCardDto(body.getCard(), body.getType().getType());
+        HttpEntity<VtPassVerifySmartCardDto> verifyBody = new HttpEntity<>(dto, vtPassPostHeader());
         var response = restTemplate.postForObject(
                 VtpassEndpoints.VERIFY_NUMBER,
                 verifyBody, VtPassTvSubscriptionQueryResponse.class
         );
         if(Objects.requireNonNull(response).getStatusCode().equalsIgnoreCase("000")) {
             if(ObjectUtils.isNotEmpty(response.getContent())) {
+                ObjectMapper mapper = new ObjectMapper();
+                var content = mapper.readValue(
+                        mapper.writeValueAsString(response.getContent()),
+                        TvSubscriptionQueryContent.class
+                );
                 return new ApiResponse<>(
-                        response.getContent(),
-                        "Successful"
+                        content,
+                        "Account found"
                 );
             }
+        } else if(Objects.requireNonNull(response).getContent() instanceof String) {
+            throw new MonieFlexException(response.getContent().toString());
         }
         throw new MonieFlexException("Request failed");
     }
 
-    public ApiResponse<List<VtpassDataVariation>> getDataVariations(String code){
+    public ApiResponse<List<VtpassDataVariation>> getDataVariations(String code) {
         HttpEntity<Object> entity = new HttpEntity<>(vtPassGetHeader());
         var response = restTemplate.exchange(
                 VtpassEndpoints.VARIATION_URL(code), HttpMethod.GET, entity, VtpassDataVariationResponse.class
         );
         if(response.getStatusCode().is2xxSuccessful()){
-                if (Objects.requireNonNull(response.getBody()).getDescription().equalsIgnoreCase("000")) {
+            if(Objects.requireNonNull(response.getBody()).getDescription() != null) {
+                if (response.getBody().getDescription().equalsIgnoreCase("000")) {
                     if (ObjectUtils.isNotEmpty(response.getBody().getContent().getVariations())) {
                         return new ApiResponse<>(
                                 response.getBody().getContent().getVariations(),
                                 "Request successfully processed");
                     }
                 }
+            }
         }
-            throw new MonieFlexException("Request failed");
+        throw new MonieFlexException("Request failed");
     }
 
     public ApiResponse<List<VtpassTVariation>> getTvVariations(String code) {
@@ -172,7 +183,7 @@ public class VtPassService {
                 dataSubscriptionDto.type().getType(),
                 dataSubscriptionDto.phone(),
                 dataSubscriptionDto.data(),
-                Integer.valueOf(dataSubscriptionDto.amount()),
+                dataSubscriptionDto.amount(),
                 dataSubscriptionDto.phone()
         );
         HttpEntity<VtpassDataSubscriptionDto> buyBody = new HttpEntity<>(vtData, vtPassPostHeader());
@@ -184,7 +195,6 @@ public class VtPassService {
             var reference = buyResponse.getBody().getToken() != null
                     ? buyResponse.getBody().getToken()
                     : buyResponse.getBody().getExchangeReference();
-            transaction.setNarration("Data Billing");
             transaction.setReference(buyResponse.getBody().getRequestId());
             transaction.setProviderReference(reference);
             transaction.setStatus(TransactionStatus.SUCCESSFUL);
@@ -226,11 +236,13 @@ public class VtPassService {
                 verifyMeter.meter(),
                 verifyMeter.disco().getType()
         );
+        System.out.println(data);
         HttpEntity<VtPassVerifyMeterDto> verifyBody = new HttpEntity<>(data, vtPassPostHeader());
         var response = restTemplate.postForObject(
                 VtpassEndpoints.VERIFY_NUMBER,
                 verifyBody, VtPassVerifyMeterResponse.class
         );
+        System.out.println(response);
         if(Objects.requireNonNull(response).getCode().equalsIgnoreCase("000")) {
             System.out.println(response.getContent() );
             if(ObjectUtils.isNotEmpty(response.getContent().getCustomerName())) {
@@ -247,23 +259,21 @@ public class VtPassService {
     public Transaction tvSubscription(TvSubsDto tvSubsDto, Transaction transaction ){
         VtpassTvSubscriptionDto vtpassTv = new VtpassTvSubscriptionDto(
                 transaction.getReference(),
-                tvSubsDto.serviceId(),
-                tvSubsDto.billersCode(),
-                tvSubsDto.variationCode(),
+                tvSubsDto.type().getType(),
+                tvSubsDto.card(),
+                tvSubsDto.code(),
                 tvSubsDto.amount(),
                 tvSubsDto.phone(),
-                tvSubsDto.subscriptionType().name()
+                tvSubsDto.subscriptionType().getType()
         );
         HttpEntity<VtpassTvSubscriptionDto> buyBody = new HttpEntity<>(vtpassTv,vtPassPostHeader());
-        var response = restTemplate.postForEntity(VtpassEndpoints.PAY, buyBody, VtpassTVariationResponse.class);
+        var response = restTemplate.postForEntity(VtpassEndpoints.PAY, buyBody, VtPassTvSubscriptionResponse.class);
 
-        System.out.println(Objects.requireNonNull(response.getBody()).getContent());
-        if(Objects.requireNonNull(response.getBody()).getDescription().toLowerCase().contains("success")){
-            var reference = response.getBody().getToken() != null
-                    ? response.getBody().getToken()
-                    : response.getBody().getExchangeReference();
-            transaction.setProviderReference(reference);
-            transaction.setStatus(TransactionStatus.SUCCESSFUL);
+        if(Objects.requireNonNull(response.getBody()).getCode().toLowerCase().contains("000")){
+            if(response.getBody().getContent() != null) {
+                transaction.setProviderReference(response.getBody().getRequestId());
+                transaction.setStatus(TransactionStatus.SUCCESSFUL);
+            }
         }else {
             transaction.setStatus(TransactionStatus.FAILED);
         }

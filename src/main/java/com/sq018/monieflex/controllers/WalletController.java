@@ -2,10 +2,7 @@ package com.sq018.monieflex.controllers;
 
 import com.sq018.monieflex.dtos.*;
 import com.sq018.monieflex.enums.TransactionType;
-import com.sq018.monieflex.payloads.ApiResponse;
-import com.sq018.monieflex.payloads.TransactionDataResponse;
-import com.sq018.monieflex.payloads.TransactionHistoryResponse;
-import com.sq018.monieflex.payloads.WalletPayload;
+import com.sq018.monieflex.payloads.*;
 import com.sq018.monieflex.payloads.flutterwave.AllBanksData;
 import com.sq018.monieflex.services.WalletService;
 import jakarta.validation.Valid;
@@ -46,7 +43,7 @@ public class WalletController {
     }
 
     @GetMapping("/view-transactions")
-    public ResponseEntity<ApiResponse<List<TransactionHistoryResponse>>> viewTransactions(
+    public ResponseEntity<ApiResponse<TransactionHistoryResponse>> viewTransactions(
             @RequestParam Integer page, @RequestParam Integer size
     ) {
         var response = walletService.queryHistory(page, size);
@@ -54,7 +51,7 @@ public class WalletController {
     }
 
     @GetMapping("/history")
-    public ResponseEntity<ApiResponse<List<TransactionHistoryResponse>>> viewHistory(
+    public ResponseEntity<ApiResponse<List<TransactionHistory>>> viewHistory(
             @RequestParam Integer page, @RequestParam Integer size, @RequestParam TransactionType type
             ) {
         var response = walletService.queryHistory(page, size, type);

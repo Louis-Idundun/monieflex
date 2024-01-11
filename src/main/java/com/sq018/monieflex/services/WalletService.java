@@ -9,10 +9,7 @@ import com.sq018.monieflex.entities.transactions.VerifyFundWallet;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.exceptions.MonieFlexException;
-import com.sq018.monieflex.payloads.ApiResponse;
-import com.sq018.monieflex.payloads.TransactionDataResponse;
-import com.sq018.monieflex.payloads.TransactionHistoryResponse;
-import com.sq018.monieflex.payloads.WalletPayload;
+import com.sq018.monieflex.payloads.*;
 import com.sq018.monieflex.payloads.flutterwave.VerifyAccountResponse;
 import com.sq018.monieflex.payloads.flutterwave.AllBanksData;
 import com.sq018.monieflex.repositories.TransactionRepository;
@@ -55,8 +52,6 @@ public class WalletService {
 
     private static final BigDecimal MINIMUM_FUND_AMOUNT = new BigDecimal("100.0");
     private final VerifyFundWalletRepository verifyFundWalletRepository;
-
-    private final Integer AVERAGE = 1000;
 
     protected String generateTxRef() {
         return "MONF-" + UUID.randomUUID().toString().substring(0, 6);
@@ -165,13 +160,18 @@ public class WalletService {
         return new ApiResponse<>(localAccountQueryResponse, "Success", HttpStatus.OK);
     }
 
-    public ApiResponse<List<TransactionHistoryResponse>> queryHistory(Integer page, Integer size) {
+    public ApiResponse<TransactionHistoryResponse> queryHistory(Integer page, Integer size) {
         String email = UserUtil.getLoginUser();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("createdAt")));
         var transactions = transactionRepository.findByUser_EmailAddress(email, pageable);
-        List<TransactionHistoryResponse> history = new ArrayList<>();
+        List<TransactionHistory> history = new ArrayList<>();
         transactions.forEach(transaction -> history.add(prepareTransactionHistory(transaction)));
-        return new ApiResponse<>(history, "Transaction History successfully fetched");
+
+        TransactionHistoryResponse response = new TransactionHistoryResponse();
+        response.setData(history);
+        response.setPages(transactions.getTotalPages());
+        response.setElements(transactions.getTotalElements());
+        return new ApiResponse<>(response, "Transaction History successfully fetched");
     }
 
     private String getName(Transaction transaction) {
@@ -194,66 +194,55 @@ public class WalletService {
         if(transaction.getTransactionType() == TransactionType.AIRTIME) {
             return transaction.getReceiverName();
         } else if(transaction.getTransactionType() == TransactionType.TV) {
-            return transaction.getBillVariation().toUpperCase();
+            return transaction.getBillType() + " - " + transaction.getBillVariation();
         } else if(transaction.getTransactionType() == TransactionType.ELECTRICITY) {
             return transaction.getBillType().name().toUpperCase();
         } else if(transaction.getTransactionType() == TransactionType.DATA) {
             return transaction.getBillVariation().toUpperCase();
+        } else if(transaction.getTransactionType() == TransactionType.LOCAL
+            || transaction.getTransactionType() == TransactionType.EXTERNAL
+        ) {
+            return transaction.getAccount();
         } else {
             return transaction.getNarration();
         }
     }
 
     public static String getTime(LocalDateTime dateTime) {
-        LocalDateTime currentDateTime = LocalDateTime.now();
-
-        if (dateTime.toLocalDate().equals(currentDateTime.toLocalDate())) {
-            return "Today";
-        } else if (dateTime.toLocalDate().equals(currentDateTime.minusDays(1).toLocalDate())) {
-            return "Yesterday";
-        } else {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mma");
-            return dateTime.format(formatter);
-        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mma");
+        return dateTime.format(formatter);
     }
 
     public static String getDate(LocalDateTime dateTime) {
-        LocalDateTime currentDateTime = LocalDateTime.now();
-
-        if (dateTime.toLocalDate().equals(currentDateTime.toLocalDate())) {
-            return "Today";
-        } else if (dateTime.toLocalDate().equals(currentDateTime.minusDays(1).toLocalDate())) {
-            return "Yesterday";
-        } else {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            return dateTime.format(formatter);
-        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        return dateTime.format(formatter);
     }
 
     public static String getAmount(BigDecimal n) {
         return NumberFormat.getCurrencyInstance().format(n);
     }
 
-    private TransactionHistoryResponse prepareTransactionHistory(Transaction transaction) {
+    private TransactionHistory prepareTransactionHistory(Transaction transaction) {
         String loginUserEmail = UserUtil.getLoginUser();
         Wallet user = walletRepository.findByUser_EmailAddressIgnoreCase(loginUserEmail)
                 .orElseThrow(() -> new MonieFlexException("User not found"));
 
-        TransactionHistoryResponse response = new TransactionHistoryResponse();
+        TransactionHistory response = new TransactionHistory();
         response.setName(getName(transaction));
         response.setDescription(getDescription(transaction));
         response.setTime(getTime(transaction.getCreatedAt()));
         response.setDate(getDate(transaction.getCreatedAt()));
         response.setAmount(getAmount(transaction.getAmount()));
         response.setIsCredit(user.getNumber().equals(transaction.getAccount()));
+        response.setStatus(transaction.getStatus());
         return response;
     }
 
-    public ApiResponse<List<TransactionHistoryResponse>> queryHistory(Integer page, Integer size, TransactionType type) {
+    public ApiResponse<List<TransactionHistory>> queryHistory(Integer page, Integer size, TransactionType type) {
         String email = UserUtil.getLoginUser();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("createdAt")));
         var transactions = transactionRepository.findByTransactionTypeAndUser_EmailAddress(type, email, pageable);
-        List<TransactionHistoryResponse> history = new ArrayList<>();
+        List<TransactionHistory> history = new ArrayList<>();
         transactions.forEach(transaction -> history.add(prepareTransactionHistory(transaction)));
         return new ApiResponse<>(history, "Transaction History successfully fetched");
     }
@@ -340,29 +329,14 @@ public class WalletService {
             }
         });
 
-        var month1Response = prepareChart(month1, months.get(0));
-        list.add(month1Response);
-
-        var month2Response = prepareChart(month2, months.get(1));
-        list.add(month2Response);
-
-        var month3Response = prepareChart(month3, months.get(2));
-        list.add(month3Response);
-
-        var month4Response = prepareChart(month4, months.get(3));
-        list.add(month4Response);
-
-        var month5Response = prepareChart(month5, months.get(4));
-        list.add(month5Response);
-
-        var month6Response = prepareChart(month6, months.get(5));
-        list.add(month6Response);
-
-        var month7Response = prepareChart(month7, months.get(6));
-        list.add(month7Response);
-
-        var month8Response = prepareChart(month8, months.get(7));
-        list.add(month8Response);
+        list.add(prepareChart(month1, months.get(0)));
+        list.add(prepareChart(month2, months.get(1)));
+        list.add(prepareChart(month3, months.get(2)));
+        list.add(prepareChart(month4, months.get(3)));
+        list.add(prepareChart(month5, months.get(4)));
+        list.add(prepareChart(month6, months.get(5)));
+        list.add(prepareChart(month7, months.get(6)));
+        list.add(prepareChart(month8, months.get(7)));
 
         return new ApiResponse<>(list, "Data fetched successfully", HttpStatus.OK);
     }
@@ -399,6 +373,7 @@ public class WalletService {
             total += Double.parseDouble(String.valueOf(bigDecimal));
         }
         var data = total * 30;
+        int AVERAGE = 1000;
         var result = data / AVERAGE;
         return String.valueOf(result);
     }
@@ -469,8 +444,12 @@ public class WalletService {
                  response.setIsUsed(true);
                  verifyFundWalletRepository.save(response);
                  transactionRepository.findById(response.getTransaction().getId()).ifPresentOrElse(
-                         transaction -> userUtil.updateWalletBalance(transaction.getAmount(), false),
-                         () -> {
+                         transaction -> {
+                             userUtil.updateWalletBalance(transaction.getAmount(), false);
+                             transaction.setStatus(TransactionStatus.SUCCESSFUL);
+                             transaction.setUpdatedAt(LocalDateTime.now());
+                             transactionRepository.save(transaction);
+                         }, () -> {
                              throw new MonieFlexException("Error occurred while completing request");
                          });
              }
