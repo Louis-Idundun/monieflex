@@ -1,6 +1,7 @@
 package com.sq018.monieflex.services;
 
 
+import com.sq018.monieflex.enums.BillType;
 import com.sq018.monieflex.exceptions.MonieFlexException;
 import com.sq018.monieflex.payloads.vtpass.VtpassDataVariation;
 import com.sq018.monieflex.services.providers.VtPassService;
@@ -27,8 +28,8 @@ public class DataService {
     private final VtPassService vtPassService;
 
 
-    public ApiResponse<List<VtpassDataVariation>> viewDataVariations(String code){
-        return vtPassService.getDataVariations(code);
+    public ApiResponse<List<VtpassDataVariation>> viewDataVariations(BillType code) {
+        return vtPassService.getDataVariations(code.getType());
     }
 
 
@@ -53,21 +54,15 @@ public class DataService {
 
             var response = vtPassService.dataSubscription(dataSubscriptionDto, transaction);
             if(response.getReference().equals(transaction.getReference())) {
+                transactionRepository.save(response);
                 if(response.getStatus() == TransactionStatus.FAILED) {
                     userUtil.updateWalletBalance(response.getAmount(), false);
-                }
-                transactionRepository.save(response);
-
-                String message;
-                if(response.getStatus() == TransactionStatus.SUCCESSFUL) {
-                    message = "Transaction successful";
-                } else if(response.getStatus() == TransactionStatus.PENDING) {
-                    message = "Transaction incomplete";
+                    throw new MonieFlexException("Transaction failed");
+                } else if(response.getStatus() == TransactionStatus.SUCCESSFUL) {
+                    return new ApiResponse<>(response.getAccount(), "Transaction successful");
                 } else {
-                    message = "Transaction failed";
+                    throw new MonieFlexException("Transaction pending");
                 }
-
-                return new ApiResponse<>(response.getAccount(), message);
             } else {
                 throw new MonieFlexException("Error in completing transaction");
             }

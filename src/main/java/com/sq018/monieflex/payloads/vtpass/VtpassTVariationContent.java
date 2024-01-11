@@ -13,12 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VtpassTVariationContent {
-    @JsonProperty("ServiceName")
-    private String serviceName;
-    @JsonProperty("serviceID")
-    private String serviceId;
-//    @JsonProperty("convinience_fee")
-//    private String fee;
     @JsonProperty("varations")
     private List<VtpassTVariation> variations;
 }

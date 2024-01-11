@@ -1,8 +1,8 @@
 package com.sq018.monieflex.services;
-
-import com.sq018.monieflex.dtos.VtPassVerifySmartCardDto;
+import com.sq018.monieflex.dtos.VerifySmartCard;
 import com.sq018.monieflex.dtos.TvSubsDto;
 import com.sq018.monieflex.entities.Transaction;
+import com.sq018.monieflex.enums.BillType;
 import com.sq018.monieflex.enums.TransactionStatus;
 import com.sq018.monieflex.enums.TransactionType;
 import com.sq018.monieflex.exceptions.MonieFlexException;
@@ -28,11 +28,11 @@ public class TvService {
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
 
-    public ApiResponse<List<VtpassTVariation>> viewTvVariations(String code) {
-        return vtPassService.getTvVariations(code);
+    public ApiResponse<List<VtpassTVariation>> viewTvVariations(BillType code) {
+        return vtPassService.getTvVariations(code.getType());
     }
 
-    public ApiResponse<TvSubscriptionQueryContent> queryTvAccount(VtPassVerifySmartCardDto smartCard) {
+    public ApiResponse<TvSubscriptionQueryContent> queryTvAccount(VerifySmartCard smartCard) {
         return vtPassService.queryTVAccount(smartCard);
     }
 
@@ -46,11 +46,12 @@ public class TvService {
             Transaction transaction = new Transaction();
             transaction.setStatus(TransactionStatus.PENDING);
             transaction.setNarration(tvSubsDto.narration());
-            transaction.setAccount(tvSubsDto.billersCode());
+            transaction.setAccount(tvSubsDto.card());
             transaction.setAmount(BigDecimal.valueOf(tvSubsDto.amount()));
             transaction.setReference(vtPassService.generateRequestId());
             transaction.setTransactionType(TransactionType.TV);
-            transaction.setBillVariation(tvSubsDto.variationCode().toUpperCase());
+            transaction.setBillType(tvSubsDto.type());
+            transaction.setBillVariation(tvSubsDto.code());
             transaction.setUser(user);
 
             var response = vtPassService.tvSubscription(tvSubsDto, transaction);
@@ -62,7 +63,7 @@ public class TvService {
                 }
                 return new ApiResponse<>(
                         response.getAccount(),
-                        response.getStatus().name()
+                        "Transaction " + response.getStatus().name().toLowerCase()
                 );
             } else {
                 throw new MonieFlexException("Error in completing transaction");

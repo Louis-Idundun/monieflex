@@ -2,6 +2,7 @@ package com.sq018.monieflex.utils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class TimeUtils {
@@ -14,6 +15,7 @@ public class TimeUtils {
             months.add(current.getMonth().name());
             current = current.minusMonths(1);
         }
+        Collections.reverse(months);
         return months;
     }
 }
