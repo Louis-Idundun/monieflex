@@ -2,9 +2,12 @@ package com.sq018.monieflex.payloads;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 @Data
 public class TransactionDataResponse {
-    private String month;
-    private String income;
-    private String expense;
+    private BigDecimal totalIncome;
+    private BigDecimal totalExpense;
+    private List<TransactionData> dataList;
 }

@@ -10,7 +10,7 @@ import org.springframework.lang.NonNull;
 import java.util.List;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
-    List<Transaction> queryByUser_EmailAddress(@NonNull String emailAddress);
-    Page<Transaction> findByUser_EmailAddress(String emailAddress, Pageable pageable);
+    Page<Transaction> findByUser_EmailAddressOrAccount(@NonNull String emailAddress, @NonNull String account, Pageable pageable);
+    List<Transaction> queryByUser_EmailAddressOrAccount(@NonNull String emailAddress, @NonNull String account);
     Page<Transaction> findByTransactionTypeAndUser_EmailAddress(TransactionType type, String email, Pageable pageable);
 }

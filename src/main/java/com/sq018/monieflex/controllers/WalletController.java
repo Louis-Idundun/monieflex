@@ -100,7 +100,7 @@ public class WalletController {
     }
 
     @GetMapping("/data")
-    public ResponseEntity<ApiResponse<List<TransactionDataResponse>>> viewDataChart() {
+    public ResponseEntity<ApiResponse<TransactionDataResponse>> viewDataChart() {
         var response = walletService.getTransactionChart();
         return new ResponseEntity<>(response, response.getStatus());
     }
