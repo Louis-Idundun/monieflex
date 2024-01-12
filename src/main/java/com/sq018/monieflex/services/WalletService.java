@@ -29,7 +29,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
@@ -161,9 +160,13 @@ public class WalletService {
     }
 
     public ApiResponse<TransactionHistoryResponse> queryHistory(Integer page, Integer size) {
-        String email = UserUtil.getLoginUser();
+        var user = walletRepository.findByUser_EmailAddressIgnoreCase(UserUtil.getLoginUser())
+                .orElseThrow(() -> new MonieFlexException("User not found"));
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("createdAt")));
-        var transactions = transactionRepository.findByUser_EmailAddress(email, pageable);
+        var transactions = transactionRepository.findByUser_EmailAddressOrAccount(
+                UserUtil.getLoginUser(), user.getNumber(), pageable
+        );
         List<TransactionHistory> history = new ArrayList<>();
         transactions.forEach(transaction -> history.add(prepareTransactionHistory(transaction)));
 
@@ -295,8 +298,10 @@ public class WalletService {
         }
     }
 
-    public ApiResponse<List<TransactionDataResponse>> getTransactionChart() {
-        var transactions = transactionRepository.queryByUser_EmailAddress(UserUtil.getLoginUser());
+    public ApiResponse<TransactionDataResponse> getTransactionChart() {
+        Wallet wallet = walletRepository.findByUser_EmailAddressIgnoreCase(UserUtil.getLoginUser())
+                .orElseThrow(() -> new MonieFlexException("Wallet not found"));
+        var transactions = transactionRepository.queryByUser_EmailAddressOrAccount(UserUtil.getLoginUser(), wallet.getNumber());
         var months = TimeUtils.getMonths();
 
         List<Transaction> month1 = new ArrayList<>();
@@ -308,7 +313,7 @@ public class WalletService {
         List<Transaction> month7 = new ArrayList<>();
         List<Transaction> month8 = new ArrayList<>();
 
-        List<TransactionDataResponse> list = new ArrayList<>();
+        List<TransactionData> list = new ArrayList<>();
         transactions.forEach(transaction -> {
             if(transaction.getCreatedAt().getMonth().name().equals(months.get(0))) {
                 month1.add(transaction);
@@ -338,10 +343,28 @@ public class WalletService {
         list.add(prepareChart(month7, months.get(6)));
         list.add(prepareChart(month8, months.get(7)));
 
-        return new ApiResponse<>(list, "Data fetched successfully", HttpStatus.OK);
+
+        List<BigDecimal> incomes = new ArrayList<>();
+        List<BigDecimal> expenses = new ArrayList<>();
+        transactions.forEach(transaction -> {
+            if(wallet.getNumber().equals(transaction.getAccount())) {
+                incomes.add(transaction.getAmount());
+            } else {
+                expenses.add(transaction.getAmount());
+            }
+        });
+
+        BigDecimal totalIncome = computeTotal(incomes);
+        BigDecimal totalExpense = computeTotal(expenses);
+        TransactionDataResponse response = new TransactionDataResponse();
+        response.setTotalIncome(totalIncome);
+        response.setTotalExpense(totalExpense);
+        response.setDataList(list);
+
+        return new ApiResponse<>(response, "Data fetched successfully", HttpStatus.OK);
     }
 
-    private TransactionDataResponse prepareChart(List<Transaction> transactions, String month) {
+    private TransactionData prepareChart(List<Transaction> transactions, String month) {
         Wallet user = walletRepository.findByUser_EmailAddressIgnoreCase(UserUtil.getLoginUser())
                 .orElseThrow(() -> new MonieFlexException("User not found"));
 
@@ -359,11 +382,19 @@ public class WalletService {
 
         var income = calculateExpenditure(incomeList);
         var expense = calculateExpenditure(expenseList);
-        TransactionDataResponse response = new TransactionDataResponse();
+        TransactionData response = new TransactionData();
         response.setIncome(income);
         response.setExpense(expense);
         response.setMonth(month.substring(0, 3));
         return response;
+    }
+
+    private BigDecimal computeTotal(List<BigDecimal> amounts){
+        BigDecimal total = BigDecimal.ZERO;
+        for (BigDecimal value : amounts) {
+            total = total.add(value);
+        }
+        return total;
     }
 
     private String calculateExpenditure(List<BigDecimal> list) {
@@ -372,10 +403,7 @@ public class WalletService {
         for (BigDecimal bigDecimal : list) {
             total += Double.parseDouble(String.valueOf(bigDecimal));
         }
-        var data = total * 30;
-        int AVERAGE = 1000;
-        var result = data / AVERAGE;
-        return String.valueOf(result);
+        return String.valueOf(total);
     }
 
     public ApiResponse<String> fundWallet(FundWalletDto fundWalletDto) {
