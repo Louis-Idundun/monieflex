@@ -17,7 +17,6 @@ import java.math.BigDecimal;
 public class FundWalletDto {
     @CreditCardNumber(message = "Card number must be correct")
     private String cardNumber;
-    @Pattern(regexp = "^(0[1-9]|1[0-2])\\/?([0-9]{4}|[0-9]{2})$")
     private String expiryDate;
     @Size(min = 3, max = 4, message = "CVV cannot be less than 3 or more than 4")
     private String cvv;

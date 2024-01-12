@@ -312,25 +312,27 @@ public class WalletService {
         List<Transaction> month8 = new ArrayList<>();
 
         List<TransactionData> list = new ArrayList<>();
-        transactions.forEach(transaction -> {
-            if(transaction.getCreatedAt().getMonth().name().equals(months.get(0))) {
-                month1.add(transaction);
-            } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(1))) {
-                month2.add(transaction);
-            } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(2))) {
-                month3.add(transaction);
-            } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(3))) {
-                month4.add(transaction);
-            } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(4))) {
-                month5.add(transaction);
-            } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(5))) {
-                month6.add(transaction);
-            } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(6))) {
-                month7.add(transaction);
-            } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(7))) {
-                month8.add(transaction);
-            }
-        });
+        transactions.stream()
+                .filter(transaction -> transaction.getStatus() == TransactionStatus.SUCCESSFUL)
+                .forEach(transaction -> {
+                    if(transaction.getCreatedAt().getMonth().name().equals(months.get(0))) {
+                        month1.add(transaction);
+                    } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(1))) {
+                        month2.add(transaction);
+                    } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(2))) {
+                        month3.add(transaction);
+                    } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(3))) {
+                        month4.add(transaction);
+                    } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(4))) {
+                        month5.add(transaction);
+                    } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(5))) {
+                        month6.add(transaction);
+                    } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(6))) {
+                        month7.add(transaction);
+                    } else if(transaction.getCreatedAt().getMonth().name().equals(months.get(7))) {
+                        month8.add(transaction);
+                    }
+                });
 
         list.add(prepareChart(month1, months.get(0)));
         list.add(prepareChart(month2, months.get(1)));
