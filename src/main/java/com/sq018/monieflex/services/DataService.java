@@ -39,7 +39,6 @@ public class DataService {
                 () -> new MonieFlexException("User not found")
         );
         if(userUtil.isBalanceSufficient(BigDecimal.valueOf(dataSubscriptionDto.amount()))) {
-            userUtil.updateWalletBalance(BigDecimal.valueOf(dataSubscriptionDto.amount()), true);
             Transaction transaction = new Transaction();
             transaction.setStatus(TransactionStatus.PENDING);
             transaction.setNarration(dataSubscriptionDto.narration());
@@ -59,6 +58,7 @@ public class DataService {
                     userUtil.updateWalletBalance(response.getAmount(), false);
                     throw new MonieFlexException("Transaction failed");
                 } else if(response.getStatus() == TransactionStatus.SUCCESSFUL) {
+                    userUtil.updateWalletBalance(response.getAmount(), true);
                     return new ApiResponse<>(response.getAccount(), "Transaction successful");
                 } else {
                     throw new MonieFlexException("Transaction pending");

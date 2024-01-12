@@ -1,6 +1,7 @@
 package com.sq018.monieflex.configs;
 
 import com.sq018.monieflex.exceptions.MonieFlexException;
+import com.sq018.monieflex.payloads.ApiResponse;
 import com.sq018.monieflex.services.implementations.JwtImplementation;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,7 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
-    ) {
+    ){
         String header = request.getHeader("Authorization");
 
         if(header == null || !header.startsWith("Bearer")){
@@ -39,17 +41,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String jwtToken = header.substring(7);
 
-        if(jwtImplementation.isExpired(jwtToken)) {
-            throw new MonieFlexException("Your session has expired. Please login");
-        }
+        try {
+            if(jwtImplementation.isExpired(jwtToken)) {
+                throw new MonieFlexException("Your session has expired. Please login");
+            }
 
-        String email = jwtImplementation.extractEmailAddressFromToken(jwtToken);
-        if(email != null && SecurityContextHolder.getContext().getAuthentication() == null){
-            UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                    this.userDetailsService.loadUserByUsername(email), null, Collections.emptyList()
-            );
-            token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(token);
+            String email = jwtImplementation.extractEmailAddressFromToken(jwtToken);
+            if(email != null && SecurityContextHolder.getContext().getAuthentication() == null){
+                UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
+                        this.userDetailsService.loadUserByUsername(email), null, Collections.emptyList()
+                );
+                token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(token);
+            }
+        } catch (Exception e) {
+            response.sendError(1, "Your session has expired. Please login");
+            request.setAttribute("token_error", "Your session has expired. Please login");
+//            response.setStatus(401);
+            return;
         }
         filterChain.doFilter(request, response);
     }

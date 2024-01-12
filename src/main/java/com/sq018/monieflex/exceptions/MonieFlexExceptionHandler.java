@@ -19,6 +19,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -125,6 +126,14 @@ public class MonieFlexExceptionHandler extends ResponseEntityExceptionHandler {
     public ApiResponse<String> handleUnknownHostException(){
         return new ApiResponse<>(
                 "An error occurred while handling request. Check your internet connection.",
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(HttpServerErrorException.class)
+    public ApiResponse<String> handleServerException(){
+        return new ApiResponse<>(
+                "Invalid input.",
                 HttpStatus.BAD_REQUEST
         );
     }
