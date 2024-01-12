@@ -82,13 +82,11 @@ public class WalletService {
             transaction.setUser(user);
             transactionRepository.save(transaction);
 
-            userUtil.updateWalletBalance(BigDecimal.valueOf(transfer.amount()), true);
-
             var result = flutterwaveService.bankTransfer(transfer, transaction.getReference());
             if(result.getStatus() == TransactionStatus.SUCCESSFUL) {
                 transaction.setStatus(TransactionStatus.SUCCESSFUL);
                 transactionRepository.save(transaction);
-                userUtil.updateWalletBalance(BigDecimal.valueOf(transfer.amount()), false);
+                userUtil.updateWalletBalance(BigDecimal.valueOf(transfer.amount()), true);
                 return new ApiResponse<>("Transaction successful", HttpStatus.OK);
             } else {
                 transaction.setStatus(TransactionStatus.FAILED);

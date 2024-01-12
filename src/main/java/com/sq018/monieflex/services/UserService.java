@@ -43,6 +43,9 @@ public class UserService {
         var email = UserUtil.getLoginUser();
         var user = userRepository.findByEmailAddress(email);
         if(user.isPresent()) {
+            if(passwordEncoder.matches(changePasswordDto.newPassword(), user.get().getEncryptedPassword())){
+                throw new MonieFlexException("Password already in use");
+            }
             if(changePasswordDto.newPassword().equals(changePasswordDto.confirmPassword())) {
                 user.get().setEncryptedPassword(passwordEncoder.encode(changePasswordDto.newPassword()));
                 userRepository.save(user.get());
