@@ -43,20 +43,21 @@ public class UserService {
         var email = UserUtil.getLoginUser();
         var user = userRepository.findByEmailAddress(email);
         if(user.isPresent()) {
-            if(passwordEncoder.matches(changePasswordDto.newPassword(), user.get().getEncryptedPassword())){
-                throw new MonieFlexException("Password already in use");
-            }
-            if(changePasswordDto.newPassword().equals(changePasswordDto.confirmPassword())) {
-                user.get().setEncryptedPassword(passwordEncoder.encode(changePasswordDto.newPassword()));
-                userRepository.save(user.get());
+            if(passwordEncoder.matches(changePasswordDto.oldPassword(), user.get().getEncryptedPassword())){
+                if(changePasswordDto.newPassword().equals(changePasswordDto.confirmPassword())) {
+                    user.get().setEncryptedPassword(passwordEncoder.encode(changePasswordDto.newPassword()));
+                    userRepository.save(user.get());
 
-                ApiResponse<String> response = new ApiResponse<>(
-                        "New password",
-                        "Password successfully changed"
-                );
-                return new ResponseEntity<>(response, response.getStatus());
+                    ApiResponse<String> response = new ApiResponse<>(
+                            "New password",
+                            "Password successfully changed"
+                    );
+                    return new ResponseEntity<>(response, response.getStatus());
+                } else {
+                    throw new MonieFlexException("Password does not match");
+                }
             } else {
-                throw new MonieFlexException("Password does not match");
+                throw new MonieFlexException("Incorrect password");
             }
         } else {
             throw new MonieFlexException("User not found");

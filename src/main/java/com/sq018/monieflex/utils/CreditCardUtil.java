@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -28,14 +30,21 @@ public class CreditCardUtil {
     }
 
     private static boolean isValidExpiryDate(String expiryDate) {
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/yy");
-            Date expDate = sdf.parse(expiryDate);
-            Date currentDate = new Date();
-            return expDate.after(currentDate);
-        } catch (ParseException e) {
-            return false;
+        LocalDate current = LocalDate.now();
+        int currentMonth = current.getMonthValue();
+        String currentYear = String.valueOf(current.getYear()).substring(2);
+        String[] expTime = expiryDate.split("/");
+        String expiryMonth = expTime[0];
+        String expiryYear = expTime[1];
+
+        int expYr = Integer.parseInt(expiryYear);
+        int currYr = Integer.parseInt(currentYear);
+
+        if(expYr >= currYr) {
+            int expMth = Integer.parseInt(expiryMonth);
+            return expMth >= currentMonth;
         }
+        return false;
     }
     private static boolean isValidCVV(String cardNumber, String cvv) {
         if (cardNumber.startsWith("34") || cardNumber.startsWith("37")) {
