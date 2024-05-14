@@ -20,6 +20,5 @@ public record SignupDto(
         String phoneNumber,
         @NotEmpty(message = "Password cannot be empty")
         String password
-
 ) {
 }
