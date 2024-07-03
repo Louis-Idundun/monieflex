@@ -70,7 +70,8 @@ public class SecurityFilterConfiguration {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "https://monieflexng.vercel.app/"
         ));
         configuration.setAllowedMethods(Arrays.asList(
                 HttpMethod.GET.name(),
